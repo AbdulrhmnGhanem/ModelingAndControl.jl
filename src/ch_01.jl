@@ -26,7 +26,10 @@ using DifferentialEquations, Plots, PlutoUI
 
 # ╔═╡ 28a9d730-4017-4786-bc60-8fb4981b4ed1
 # ╠═╡ show_logs = false
-using SymPy
+begin
+	using SymPy
+	import_from(sympy)
+end
 
 # ╔═╡ 32cccc2d-9eef-43c5-a441-fd112c2272e1
 md"# Analytical Solutionsfor ODEs
