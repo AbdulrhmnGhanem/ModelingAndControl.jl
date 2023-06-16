@@ -315,7 +315,7 @@ begin
 	lhs_18 = laplace_transform(ode_18.lhs, tₛ, s)[1]
 	rhs_18 = laplace_transform(ode_18.rhs, tₛ, s)[1]
 	ODE_18 = Eq(lhs_18, rhs_18)
-	Y_18 = solve(ODE_18, laplace_transform(y_18, tₛ, s))[1]
+	Y_18 = solve(ODE_18, laplace_transform(y_18, tₛ, s))[1][1]
 	# set initial conditions: we can assume heaviside is 1; y(0) 0.5 > 0
 	Y_18 = Y_18.subs(y_18.subs(tₛ, 0), 0.5)
 	y_18 = inverse_laplace_transform(Y_18, s, tₛ).subs(Heaviside(tₛ), 1)
@@ -340,7 +340,7 @@ begin
 	lhs = laplace_transform(ode_19.lhs, tₛ, s)[1]
 	rhs = laplace_transform(ode_19.rhs, tₛ, s)[1]
 	ODE_19 = Eq(lhs, rhs)
-	Y_19 = solve(ODE_19, laplace_transform(y_19, tₛ, s))[1]
+	Y_19 = solve(ODE_19, laplace_transform(y_19, tₛ, s)[1])[1]
 	Y_19 = Y_19.subs(y_19.subs(tₛ, 0), 1).subs(diff(y_19, tₛ), 2)
 	Y_19 = simplify(Y_19)
 	y_19 = inverse_laplace_transform(Y_19, s, tₛ).subs(Heaviside(tₛ), 1)
@@ -355,7 +355,7 @@ plot(y_19, 0, 14;
 )
 
 # ╔═╡ Cell order:
-# ╟─32cccc2d-9eef-43c5-a441-fd112c2272e1
+# ╠═32cccc2d-9eef-43c5-a441-fd112c2272e1
 # ╠═1bee3436-edd1-11ed-2fbd-873b2824b63d
 # ╠═98ca666d-fca1-4e8f-950d-c66a8cb81db3
 # ╟─f62e7973-f1ef-47bb-b29c-b838dec186a6
@@ -379,7 +379,7 @@ plot(y_19, 0, 14;
 # ╠═7d4f90cc-0010-4e18-9b90-1b7b86cf0c94
 # ╠═86a26f4b-2b10-4228-b6e4-f7f893867980
 # ╠═1713685d-8b71-49a8-946a-fc64a2031319
-# ╟─ee381a04-9899-42b4-aee7-1e791312102f
+# ╠═ee381a04-9899-42b4-aee7-1e791312102f
 # ╠═934924fd-60f0-47f4-92cd-8993da4c9043
 # ╠═ba1e3724-ff59-4e80-941d-3af5c08744a3
 # ╟─a235fadf-7f3b-40bc-b3f0-9e566385ca45
