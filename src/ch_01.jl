@@ -32,7 +32,7 @@ begin
 end
 
 # ╔═╡ 32cccc2d-9eef-43c5-a441-fd112c2272e1
-md"# Analytical Solutionsfor ODEs
+md"# Analytical Solutions for ODEs
 
 !!! warning 
 	Julia doesn't encourage analytcial solutions, so I am going to use `DifferentialEquations.jl` which takes a numerical approach just to get used to its API.
