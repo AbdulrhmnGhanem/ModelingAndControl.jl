@@ -18,6 +18,7 @@ ModelingToolkit = "8"
 Plots = "1"
 Pluto = "0.19"
 PlutoUI = "0.7"
+SymPy = "1"
 julia = "1.8"
 
 [extras]
