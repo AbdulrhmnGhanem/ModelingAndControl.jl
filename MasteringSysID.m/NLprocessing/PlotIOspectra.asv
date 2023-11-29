@@ -1,0 +1,224 @@
+function PlotIOspectra(Y, Yc, U, G, freq, Spacing, RealNum, FigNum);
+%
+%   function PlotIOspectra(Y, Yc, U, G, freq, Spacing, RealNum, FigNum);
+%
+%       plot the result of the nonlinear analysis of the input/output spectra
+%       Figures start with FigNum
+%       The single realisation plot plot the realisation number RealNum
+%       
+%
+%
+%   INPUT
+%
+%       Y       =   struct{'mean', 'std'} containing mean value and standard deviation output spectrum
+%                   Y.mean  =   struct{'E', 'NE'} containing the mean value of the output spectrum over P consecutive periods; size M x P x NumberOfFrequencies
+%                               Y.mean.E    =   mean output spectrum at excited odd harmonic frequencies
+%                               Y.mean.NE   =   struct{'even', 'odd'}
+%                                               Y.mean.NE.even  =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.mean.NE.even.all      =   mean output spectrum at all the non-excited even harmonics
+%                                                                   Y.mean.NE.even.inband   =   mean output spectrum at the inband non-excited even harmonics
+%                                                                   Y.mean.NE.even.outband  =   mean output spectrum at the outband non-excited even harmonics
+%                                               Y.mean.NE.odd   =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.mean.NE.odd.all       =   mean output spectrum at all the non-excited odd harmonics
+%                                                                   Y.mean.NE.odd.inband    =   mean output spectrum at the inband non-excited odd harmonics
+%                                                                   Y.mean.NE.odd.outband   =   mean output spectrum at the outband non-excited odd harmonics
+%                   Y.std   =   struct{'E', 'NE'} containing the standard deviation of the mean value of the output spectrum over P consecutive periods
+%                               Y.std.E     =   std output spectrum at excited odd harmonic frequencies
+%                               Y.std.NE    =   struct{'even', 'odd'}
+%                                               Y.std.NE.even   =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.std.NE.even.all       =   std output spectrum at all the non-excited even harmonics
+%                                                                   Y.std.NE.even.inband    =   std output spectrum at the inband non-excited even harmonics
+%                                                                   Y.std.NE.even.outband   =   std output spectrum at the outband non-excited even harmonics
+%                                               Y.std.NE.odd    =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.std.NE.odd.all        =   std output spectrum at all the non-excited odd harmonics
+%                                                                   Y.std.NE.odd.inband     =   std output spectrum at the inband non-excited odd harmonics
+%                                                                   Y.std.NE.odd.outband    =   std output spectrum at the outband non-excited odd harmonics
+%
+%       Yc      =   structure {'mean', 'std'} containing the inband mean value and standard deviation corrected output spectrum; ; size M x P x NumberOfFrequencies
+%                   corrected for the presence of energy at non-excited input harmonics
+%                   Yc.mean =   struct{'E', 'NE'} containing the inband mean corrected output spectrum
+%                               Yc.mean.E   =   mean corrected output spectrum at excited odd harmonics (same as uncorrected)
+%                               Yc.mean.NE  =   struct{'even', 'odd'}
+%                                               Yc.mean.NE.even =   mean corrected output spectrum at non-excited inband even harmonics
+%                                               Yc.mean.NE.odd  =   mean corrected output spectrum at non-excited inband odd harmonics
+%                   Yc.std  =   struct{'E', 'NE'} containing the inband standard deviation of the corrected output spectrum
+%                               Yc.std.E    =   std corrected output spectrum at excited odd harmonics (same as uncorrected)
+%                               Yc.std.NE   =   struct{'even', 'odd'}
+%                                               Yc.std.NE.even  =   std corrected output spectrum at non-excited inband even harmonics
+%                                               Yc.std.NE.odd   =   std corrected output spectrum at non-excited inband odd harmonics
+%
+%       U       =   structure {'mean', 'std'} containing mean value and standard deviation input spectrum; size M x P x F
+%                   U.mean  =   struct{'E', 'NE'} containing the mean value of the input spectrum over P consecutive periods
+%                               U.mean.E    =   mean input spectrum at excited odd harmonic frequencies
+%                               U.mean.NE   =   struct{'even', 'odd'}
+%                                               U.mean.NE.even  =   struct {'all', 'inband', 'outband'}
+%                                                                   U.mean.NE.even.all      =   mean input spectrum at all the non-excited even harmonics
+%                                                                   U.mean.NE.even.inband   =   mean input spectrum at the inband non-excited even harmonics
+%                                                                   U.mean.NE.even.outband  =   mean input spectrum at the outband non-excited even harmonics
+%                                               U.mean.NE.odd   =   struct {'all', 'inband', 'outband'}
+%                                                                   U.mean.NE.odd.all       =   mean input spectrum at all the non-excited odd harmonics
+%                                                                   U.mean.NE.odd.inband    =   mean input spectrum at the inband non-excited odd harmonics
+%                                                                   U.mean.NE.odd.outband   =   mean input spectrum at the outband non-excited odd harmonics
+%                   U.std   =   struct{'E', 'NE'} containing the standard deviation of the mean value of the input spectrum over P consecutive periods
+%                               U.std.E     =   std input spectrum at excited odd harmonic frequencies
+%                               U.std.NE    =   struct{'even', 'odd'}
+%                                               U.std.NE.even   =   struct {'all', 'inband', 'outband'}
+%                                                                   U.std.NE.even.all       =   std input spectrum at all the non-excited even harmonics
+%                                                                   U.std.NE.even.inband    =   std input spectrum at the inband non-excited even harmonics
+%                                                                   U.std.NE.even.outband   =   std input spectrum at the outband non-excited even harmonics
+%                                               U.std.NE.odd    =   struct {'all', 'inband', 'outband'}
+%                                                                   U.std.NE.odd.all        =   std input spectrum at all the non-excited odd harmonics
+%                                                                   U.std.NE.odd.inband     =   std input spectrum at the inband non-excited odd harmonics
+%                                                                   U.std.NE.odd.outband    =   std input spectrum at the outband non-excited odd harmonics
+%
+%       G       =   structure {'mean', 'stdn', 'stdNL'} containing mean value and standard deviations FRF at excited odd harmonics; size M x P x NumberOfFrequencies
+%                   G.mean  =   mean value FRF over the P consecutive periods
+%                   G.stdn  =   noise standard deviation mean value FRF over the P consecutive periods
+%                   G.stdNL =   total standard deviation mean value FRF over P consecutive periods:
+%                               G.stdNL.^2 = noise variance + stochatic NL distortions
+%
+%       freq    =   struct {'E', 'NE'} containing the excited and non-excited frequencies
+%                   freq.E  =   vector containing the excited odd harmonic frequencies
+%                   freq.NE =   struct{'even', 'odd'}
+%                               freq.NE.even    =   struct{'all', 'inband', outband'}
+%                                                   freq.NE.even.all        =   all non-excited even harmonics
+%                                                   freq.NE.even.inband     =   non-excited inband even harmonics
+%                                                   freq.NE.even.outband    =   non-excited outband even harmonics
+%                               freq.NE.odd    =   struct{'all', 'inband', outband'}
+%                                                   freq.NE.odd.all         =   all non-excited odd harmonics
+%                                                   freq.NE.odd.inband      =   non-excited inband odd harmonics
+%                                                   freq.NE.odd.outband     =   non-excited outband odd harmonics
+%
+%       Spacing =   'lin' or 'linear':      linear frequency axis in plot; default value
+%                   'log' or 'logarithmic': logarithmic frequency axis
+%
+%       RealNum =   number of realisation that is shown in the single realisation figures; default = 1;
+%
+%       FigNum  =   start of figure numbers; default = 1;
+%
+%   Rik Pintelon, March 2006
+%
+
+switch nargin
+    case 5
+        Spacing = 'lin';
+    case 6
+        RealNum = 1;
+        FigNum = 1;
+    case 7
+        FigNum = 1;
+end % switch
+Spacing = lower(Spacing);
+
+% if nargin == 6
+%     RealNum = 1;
+%     FigNum = 1;
+% end % if
+% 
+% if nargin == 7
+%     FigNum = 1;
+% end % if
+
+[M, F] = size(Y.mean.E);
+if M == 1
+    RealNum = 1;
+end % if
+
+if M > 1
+	% plot robust method
+	Gmm= mean(G.mean, 1);
+	stdGmmNL = std(G.mean, 1)/sqrt(M);
+	stdGmmn = (mean(G.stdn.^2, 1) / M) .^ 0.5;
+	
+    figure(FigNum); close; figure(FigNum);
+    switch Spacing
+        case {'lin', 'linear'}
+			plot(freq.E, db(Gmm),'k', freq.E, db(stdGmmNL),'r', freq.E, db(stdGmmn),'g')
+        case {'log', 'logarithmic'}
+			semilogx(freq.E, db(Gmm),'k', freq.E, db(stdGmmNL),'r', freq.E, db(stdGmmn),'g')
+    end
+	title('ROBUST - ALL REALISATIONS black: FRF; green: noise variance; red: total variance')
+	zoom on;
+	shg
+else
+    FigNum = FigNum-1;
+end % if
+
+
+% plot measured input-output spectra for the first multisine measurement
+% note: even NL distortions fall outside the band of interest
+FigNum = FigNum + 1;
+figure(FigNum); close; figure(FigNum);
+subplot(211)
+switch Spacing
+    case {'lin', 'linear'}
+		plot(freq.E, db(U.mean.E(RealNum, :)), 'k+', freq.E, db(U.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.all, db(U.mean.NE.odd.all(RealNum, :)), 'ro', freq.NE.odd.all, db(U.std.NE.odd.all(RealNum, :)), 'r', ...
+             freq.NE.even.all, db(U.mean.NE.even.all(RealNum, :)), 'b*', freq.NE.even.all, db(U.std.NE.even.all(RealNum, :)), 'b');
+    case {'log', 'logarithmic'}
+		semilogx(freq.E, db(U.mean.E(RealNum, :)), 'k+', freq.E, db(U.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.all, db(U.mean.NE.odd.all(RealNum, :)), 'ro', freq.NE.odd.all, db(U.std.NE.odd.all(RealNum, :)), 'r', ...
+             freq.NE.even.all, db(U.mean.NE.even.all(RealNum, :)), 'b*', freq.NE.even.all, db(U.std.NE.even.all(RealNum, :)), 'b');
+end
+title('INPUT SPECTRUM +: signal; 0: odd NL; *: even NL; -: std')
+subplot(212)
+switch Spacing
+    case {'lin', 'linear'}
+		plot(freq.E, db(Y.mean.E(RealNum, :)), 'k+', freq.E, db(Y.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.all, db(Y.mean.NE.odd.all(RealNum, :)), 'ro', freq.NE.odd.all, db(Y.std.NE.odd.all(RealNum, :)), 'r', ...
+             freq.NE.even.all, db(Y.mean.NE.even.all(RealNum, :)), 'b*', freq.NE.even.all, db(Y.std.NE.even.all(RealNum, :)), 'b');
+    case {'log', 'logarithmic'}
+		semilogx(freq.E, db(Y.mean.E(RealNum, :)), 'k+', freq.E, db(Y.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.all, db(Y.mean.NE.odd.all(RealNum, :)), 'ro', freq.NE.odd.all, db(Y.std.NE.odd.all(RealNum, :)), 'r', ...
+             freq.NE.even.all, db(Y.mean.NE.even.all(RealNum, :)), 'b*', freq.NE.even.all, db(Y.std.NE.even.all(RealNum, :)), 'b');
+end
+title('OUTPUT SPECTRUM +: signal; 0: odd NL; *: even NL; -: std')
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% prediction distortion on FRF from level non-excited odd harmonics %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+FigNum = FigNum + 1;
+figure(FigNum); close; figure(FigNum);
+switch Spacing
+    case {'lin', 'linear'}
+		plot(freq.E, db(Yc.mean.E(RealNum, :)), 'k+', freq.E, db(Yc.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.inband, db(Yc.mean.NE.odd(RealNum, :)), 'ro', freq.NE.odd.inband, db(Yc.std.NE.odd(RealNum, :)), 'r', ...
+             freq.NE.even.inband, db(Yc.mean.NE.even(RealNum, :)), 'b*', freq.NE.even.inband, db(Yc.std.NE.even(RealNum, :)), 'b');
+    case {'log', 'logarithmic'}
+		semilogx(freq.E, db(Yc.mean.E(RealNum, :)), 'k+', freq.E, db(Yc.std.E(RealNum, :)), 'k', ...
+             freq.NE.odd.inband, db(Yc.mean.NE.odd(RealNum, :)), 'ro', freq.NE.odd.inband, db(Yc.std.NE.odd(RealNum, :)), 'r', ...
+             freq.NE.even.inband, db(Yc.mean.NE.even(RealNum, :)), 'b*', freq.NE.even.inband, db(Yc.std.NE.even(RealNum, :)), 'b');
+end
+title('CORRECTED OUTPUT SPECTRUM +: signal; 0: odd NL; *: even NL; -: std')
+
+% estimate noise-level + NL distortion for first multisine experiment
+FigNum = FigNum + 1;
+figure(FigNum); close; figure(FigNum);
+switch Spacing
+    case {'lin', 'linear'}
+        plot(freq.E, db(G.mean(RealNum, :)), 'k', freq.E, db(G.stdn(RealNum,:)), 'g', freq.E, db(G.stdNL(RealNum,:)), 'r')
+    case {'log', 'logarithmic'}
+        semilogx(freq.E, db(G.mean(RealNum, :)), 'k', freq.E, db(G.stdn(RealNum,:)), 'g', freq.E, db(G.stdNL(RealNum,:)), 'r')
+end
+title('FAST - ONE REALISATION  black: FRF; green: noise variance; red: total variance')
+
+if M > 1
+	% rms averaging over the different realisations to compare information extracted by looking in between the lines
+	% to the robust method; results of the robust method are rescaled to those of one realisation
+	Gsm = mean(G.stdNL.^2, 1).^0.5;
+	stdGm = mean(G.stdn.^2, 1).^0.5;
+	
+	FigNum = FigNum + 1;
+    figure(FigNum); close; figure(FigNum);
+	switch Spacing
+        case {'lin', 'linear'}
+        	plot(freq.E, db(Gmm), 'k', freq.E, db(stdGmmn*sqrt(M)), 'g', freq.E, db(stdGmmNL*sqrt(M)), 'r', ...
+                 freq.E, db(stdGm), 'g+', freq.E, db(Gsm), 'r+')
+        case {'log', 'logarithmic'}
+        	semilogx(freq.E, db(Gmm), 'k', freq.E, db(stdGmmn*sqrt(M)), 'g', freq.E, db(stdGmmNL*sqrt(M)), 'r', ...
+                     freq.E, db(stdGm), 'g+', freq.E, db(Gsm), 'r+')
+	end
+	title('COMP. ROBUST (solid) - FAST (+) black: FRF; green: noise variance; red: total variance')
+end % if

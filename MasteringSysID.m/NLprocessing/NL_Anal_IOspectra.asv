@@ -1,0 +1,282 @@
+function [Y, Yc, U, G, freq] = NL_Anal_IOspectra(Yall, Uall, ExcitedHarm, MeasHarm, fs, N);
+%
+%       function [Y, Yc, U, G, freq] = NL_Anal_IOspectra(Yall, Uall, ExcitedHarm, MeasHarm, fs, N);
+%
+%
+%   OUTPUT
+%
+%       Y       =   struct{'mean', 'std'} containing mean value and standard deviation output spectrum
+%                   Y.mean  =   struct{'E', 'NE'} containing the mean value of the output spectrum over P consecutive periods; size M x P x NumberOfFrequencies
+%                               Y.mean.E    =   mean output spectrum at excited odd harmonic frequencies
+%                               Y.mean.NE   =   struct{'even', 'odd'}
+%                                               Y.mean.NE.even  =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.mean.NE.even.all      =   mean output spectrum at all the non-excited even harmonics
+%                                                                   Y.mean.NE.even.inband   =   mean output spectrum at the inband non-excited even harmonics
+%                                                                   Y.mean.NE.even.outband  =   mean output spectrum at the outband non-excited even harmonics
+%                                               Y.mean.NE.odd   =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.mean.NE.odd.all       =   mean output spectrum at all the non-excited odd harmonics
+%                                                                   Y.mean.NE.odd.inband    =   mean output spectrum at the inband non-excited odd harmonics
+%                                                                   Y.mean.NE.odd.outband   =   mean output spectrum at the outband non-excited odd harmonics
+%                   Y.std   =   struct{'E', 'NE'} containing the standard deviation of the mean value of the output spectrum over P consecutive periods
+%                               Y.std.E     =   std output spectrum at excited odd harmonic frequencies
+%                               Y.std.NE    =   struct{'even', 'odd'}
+%                                               Y.std.NE.even   =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.std.NE.even.all       =   std output spectrum at all the non-excited even harmonics
+%                                                                   Y.std.NE.even.inband    =   std output spectrum at the inband non-excited even harmonics
+%                                                                   Y.std.NE.even.outband   =   std output spectrum at the outband non-excited even harmonics
+%                                               Y.std.NE.odd    =   struct {'all', 'inband', 'outband'}
+%                                                                   Y.std.NE.odd.all        =   std output spectrum at all the non-excited odd harmonics
+%                                                                   Y.std.NE.odd.inband     =   std output spectrum at the inband non-excited odd harmonics
+%                                                                   Y.std.NE.odd.outband    =   std output spectrum at the outband non-excited odd harmonics
+%
+%       Yc      =   structure {'mean', 'std'} containing the inband mean value and standard deviation corrected output spectrum; size M x P x NumberOfFrequencies
+%                   corrected for the presence of energy at non-excited input harmonics
+%                   Yc.mean =   struct{'E', 'NE'} containing the inband mean corrected output spectrum
+%                               Yc.mean.E   =   mean corrected output spectrum at excited odd harmonics (same as uncorrected)
+%                               Yc.mean.NE  =   struct{'even', 'odd'}
+%                                               Yc.mean.NE.even =   mean corrected output spectrum at non-excited inband even harmonics
+%                                               Yc.mean.NE.odd  =   mean corrected output spectrum at non-excited inband odd harmonics
+%                   Yc.std  =   struct{'E', 'NE'} containing the inband standard deviation of the corrected output spectrum
+%                               Yc.std.E    =   std corrected output spectrum at excited odd harmonics (same as uncorrected)
+%                               Yc.std.NE   =   struct{'even', 'odd'}
+%                                               Yc.std.NE.even  =   std corrected output spectrum at non-excited inband even harmonics
+%                                               Yc.std.NE.odd   =   std corrected output spectrum at non-excited inband odd harmonics
+%
+%       U       =   structure {'mean', 'std'} containing mean value and standard deviation input spectrum; size M x P x F
+%                   U.mean  =   struct{'E', 'NE'} containing the mean value of the input spectrum over P consecutive periods
+%                               U.mean.E    =   mean input spectrum at excited odd harmonic frequencies
+%                               U.mean.NE   =   struct{'even', 'odd'}
+%                                               U.mean.NE.even  =   struct {'all', 'inband', 'outband'}
+%                                                                   U.mean.NE.even.all      =   mean input spectrum at all the non-excited even harmonics
+%                                                                   U.mean.NE.even.inband   =   mean input spectrum at the inband non-excited even harmonics
+%                                                                   U.mean.NE.even.outband  =   mean input spectrum at the outband non-excited even harmonics
+%                                               U.mean.NE.odd   =   struct {'all', 'inband', 'outband'}
+%                                                                   U.mean.NE.odd.all       =   mean input spectrum at all the non-excited odd harmonics
+%                                                                   U.mean.NE.odd.inband    =   mean input spectrum at the inband non-excited odd harmonics
+%                                                                   U.mean.NE.odd.outband   =   mean input spectrum at the outband non-excited odd harmonics
+%                   U.std   =   struct{'E', 'NE'} containing the standard deviation of the mean value of the input spectrum over P consecutive periods
+%                               U.std.E     =   std input spectrum at excited odd harmonic frequencies
+%                               U.std.NE    =   struct{'even', 'odd'}
+%                                               U.std.NE.even   =   struct {'all', 'inband', 'outband'}
+%                                                                   U.std.NE.even.all       =   std input spectrum at all the non-excited even harmonics
+%                                                                   U.std.NE.even.inband    =   std input spectrum at the inband non-excited even harmonics
+%                                                                   U.std.NE.even.outband   =   std input spectrum at the outband non-excited even harmonics
+%                                               U.std.NE.odd    =   struct {'all', 'inband', 'outband'}
+%                                                                   U.std.NE.odd.all        =   std input spectrum at all the non-excited odd harmonics
+%                                                                   U.std.NE.odd.inband     =   std input spectrum at the inband non-excited odd harmonics
+%                                                                   U.std.NE.odd.outband    =   std input spectrum at the outband non-excited odd harmonics
+%
+%       G       =   structure {'all', 'mean', 'stdn', 'stdNL'} containing mean value and standard deviations FRF at excited odd harmonics
+%                   G.all   =   Frequency Response Function (FRF) for all realisations and periods; size M x P x F
+%                   G.mean  =   mean value FRF over the P consecutive periods
+%                   G.stdn  =   struct{'E', 'NE'} containing the noise standard deviation of the mean FRF value over the P consecutive periods
+%                               G.stdn.E    =   noise std calculated from the excited frequencies
+%                               G.stdn.NE   =   noise std calculated from the non-excited odd frequencies (= extrapolation)
+%                               Note: a difference between G.stdn.E and G.stdn.NE indicates a non-stationary behaviour
+%                   G.stdNL =   total standard deviation mean value FRF over P consecutive periods:
+%                               G.stdNL.^2  =   noise variance + stochatic NL distortions
+%
+%       freq    =   struct {'E', 'NE'} containing the excited and non-excited frequencies
+%                   freq.E  =   vector containing the excited odd harmonic frequencies
+%                   freq.NE =   struct{'even', 'odd'}
+%                               freq.NE.even    =   struct{'all', 'inband', outband'}
+%                                                   freq.NE.even.all        =   all non-excited even harmonics
+%                                                   freq.NE.even.inband     =   non-excited inband even harmonics
+%                                                   freq.NE.even.outband    =   non-excited outband even harmonics
+%                               freq.NE.odd    =   struct{'all', 'inband', outband'}
+%                                                   freq.NE.odd.all         =   all non-excited odd harmonics
+%                                                   freq.NE.odd.inband      =   non-excited inband odd harmonics
+%                                                   freq.NE.odd.outband     =   non-excited outband odd harmonics
+%
+%   INPUT
+%
+%       Yall        =   M x P x F (or P x F) matrix containing the output spectrum
+%                       M = number of independent random phase realisations with same rms value, amplitude spectrum, and harmonic grid
+%                       P = number of consecutive periods
+%                       F = number of measured frequencies
+%
+%       Uall        =   M x P x F (or P x F) matrix containing the input spectrum
+%                       M = number of independent random phase realisations with same rms value, amplitude spectrum, and harmonic grid
+%                       P = number of consecutive periods
+%                       F = number of measured frequencies
+%
+%       ExcitedHarm =   excited odd harmonics; size Fexcited x 1
+%       MeasHarm    =   measured harmonics; size Fmeas x 1     
+%       fs          =   sampling frequency
+%       N           =   number of point in one period
+%
+%
+%   Rik Pintelon, March 2006
+%   version June 2006
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% initialisation variables and structures OUTPUT parameters %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ExcitedHarm = ExcitedHarm(:);
+MeasHarm = MeasHarm(:);
+TheSize = size(Yall);
+if length(TheSize) == 3
+    M = TheSize(1);
+    P = TheSize(2);
+    F = TheSize(3);
+else
+    M = 1;
+    P = TheSize(1);
+    F = TheSize(2);
+    dummy = zeros(1, P, F);
+    dummy(1, :, :) = Yall;
+    Yall = dummy;
+    dummy(1, :, :) = Uall;
+    Uall = dummy;
+end % if
+
+Y = struct('mean', [], 'std', []);
+Y.mean = struct('E', [], 'NE', []);
+Y.mean.NE = struct('even', [], 'odd', []);
+Y.mean.NE.even = struct('all', [], 'inband', [], 'outband', []);
+Y.mean.NE.odd = Y.mean.NE.even;
+Y.std = Y.mean;
+freq = Y.mean;
+U = Y;
+Yc = struct('mean', [], 'std', []);
+Yc.mean = struct('E', [], 'NE', []);
+Yc.mean.NE = struct('even', [], 'odd', []);
+Yc.std = Yc.mean;
+G = struct('all', [], 'mean', [], 'stdn', [], 'stdNL', []);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% harmonic content and frequencies %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% harmonic content
+NonExcitedHarm = HarmonicContent(MeasHarm, ExcitedHarm);
+
+% frequencies
+freq.E = ExcitedHarm * fs/N;
+freq.NE.even.all = NonExcitedHarm.even.all * fs/N;
+freq.NE.even.inband = NonExcitedHarm.even.inband * fs/N;
+freq.NE.even.outband = NonExcitedHarm.even.outband * fs/N;
+freq.NE.odd.all = NonExcitedHarm.odd.all * fs/N;
+freq.NE.odd.inband = NonExcitedHarm.odd.inband * fs/N;
+freq.NE.odd.outband = NonExcitedHarm.odd.outband * fs/N;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% input-output spectra %
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+Uallm = mean(Uall, 2);                 % mean over consecutive periods
+Yallm = mean(Yall, 2);                 % mean over consecutive periods
+resUall = Uall - repmat(Uallm, [1, P, 1]);
+resYall = Yall - repmat(Yallm, [1, P, 1]);
+stdUallm = squeeze((sum(abs(resUall.^2), 2)/(P-1)/P).^0.5);     % std mean value
+stdYallm = squeeze((sum(abs(resYall.^2), 2)/(P-1)/P).^0.5);     % std mean value
+varYU = squeeze(sum(resYall.*conj(resUall), 2)/(P-1)/P);        % covariance mean values
+Uallm = squeeze(Uallm);
+Yallm = squeeze(Yallm);
+if M == 1
+    Uallm = Uallm.';
+    stdUallm = stdUallm.';
+    Yallm = Yallm.';
+    stdYallm = stdYallm.';
+    varYU = varYU.';
+end % if
+
+% covariance at excited frequencies;
+% to be used for calculating the variance of G over consecutive periods
+varYU = varYU(:, ExcitedHarm - MeasHarm(1) + 1);
+
+% input spectrum, mean and standard deviation
+U.mean.E = Uallm(:, ExcitedHarm - MeasHarm(1) + 1);
+U.mean.NE.even.all = Uallm(:, NonExcitedHarm.even.all - MeasHarm(1) + 1);
+U.mean.NE.even.inband = Uallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+U.mean.NE.even.outband = Uallm(:, NonExcitedHarm.even.outband - MeasHarm(1) + 1);
+U.mean.NE.odd.all = Uallm(:, NonExcitedHarm.odd.all - MeasHarm(1) + 1);
+U.mean.NE.odd.inband = Uallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+U.mean.NE.odd.outband = Uallm(:, NonExcitedHarm.odd.outband - MeasHarm(1) + 1);
+
+U.std.E = stdUallm(:, ExcitedHarm - MeasHarm(1) + 1);
+U.std.NE.even.all = stdUallm(:, NonExcitedHarm.even.all - MeasHarm(1) + 1);
+U.std.NE.even.inband = stdUallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+U.std.NE.even.outband = stdUallm(:, NonExcitedHarm.even.outband - MeasHarm(1) + 1);
+U.std.NE.odd.all = stdUallm(:, NonExcitedHarm.odd.all - MeasHarm(1) + 1);
+U.std.NE.odd.inband = stdUallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+U.std.NE.odd.outband = stdUallm(:, NonExcitedHarm.odd.outband - MeasHarm(1) + 1);
+
+% output spectrum, mean and standard deviation
+Y.mean.E = Yallm(:, ExcitedHarm - MeasHarm(1) + 1);
+Y.mean.NE.even.all = Yallm(:, NonExcitedHarm.even.all - MeasHarm(1) + 1);
+Y.mean.NE.even.inband = Yallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+Y.mean.NE.even.outband = Yallm(:, NonExcitedHarm.even.outband - MeasHarm(1) + 1);
+Y.mean.NE.odd.all = Yallm(:, NonExcitedHarm.odd.all - MeasHarm(1) + 1);
+Y.mean.NE.odd.inband = Yallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+Y.mean.NE.odd.outband = Yallm(:, NonExcitedHarm.odd.outband - MeasHarm(1) + 1);
+
+Y.std.E = stdYallm(:, ExcitedHarm - MeasHarm(1) + 1);
+Y.std.NE.even.all = stdYallm(:, NonExcitedHarm.even.all - MeasHarm(1) + 1);
+Y.std.NE.even.inband = stdYallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+Y.std.NE.even.outband = stdYallm(:, NonExcitedHarm.even.outband - MeasHarm(1) + 1);
+Y.std.NE.odd.all = stdYallm(:, NonExcitedHarm.odd.all - MeasHarm(1) + 1);
+Y.std.NE.odd.inband = stdYallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+Y.std.NE.odd.outband = stdYallm(:, NonExcitedHarm.odd.outband - MeasHarm(1) + 1);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Frequency Response Function (FRF)                                          %
+% 1. mean value over the P consecutive periods                               %
+% 2. noise standard deviation mean value over the P consecutive periods      %
+% 3. prediction total distortion on FRF from level non-excited odd harmonics %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+G.all = Yall(:, :, ExcitedHarm - MeasHarm(1) + 1) ./ Uall(:, :, ExcitedHarm - MeasHarm(1) + 1);
+
+% mean value and noise standard deviation FRF over P consecutive periods at the excited odd harmonics
+% the mean FRF is calculated as the ratio of the mean values of the spectra in order to reduce bias
+% introduced by input noise in case of poor input SNR
+Gallm = Y.mean.E ./ U.mean.E;
+stdGallm = abs(Gallm) .* ((Y.std.E.^2)./abs(Y.mean.E.^2) + (U.std.E.^2)./abs(U.mean.E.^2) ...
+                           - 2*real(varYU./(Y.mean.E .* conj(U.mean.E)))).^0.5;
+
+G.mean = Gallm;
+G.stdn.E = stdGallm;            % noise std from excited odd harmonics
+
+% calculation FRF at inband non-excited harmonics via linear interpolation
+NonExcitedInBandHarm = sort([NonExcitedHarm.even.inband; NonExcitedHarm.odd.inband]);
+GallNEib = interp1(ExcitedHarm, Gallm.', NonExcitedInBandHarm).';       % linear interpolation is performed over the columns
+                                                                        % GallOdNE contains NaN where interpolation does not exist
+
+% correction output spectrum at inband non-excited harmonics for presence distortions at input spectrum
+Ycall = Yall;
+TheIndex = NonExcitedInBandHarm - MeasHarm(1) + 1;
+Ycall(:, :, TheIndex) = Ycall(:, :, TheIndex) - permute(repmat(GallNEib, [1 1 P]) .* permute(Uall(:, :, TheIndex), [1 3 2]), [1 3 2]);
+
+% mean and standard deviation corrected output spectrum
+Ycallm = squeeze(mean(Ycall, 2));                   % mean value over periods
+stdYcallm = squeeze(std(Ycall, 0, 2))/sqrt(P);      % std mean value over periods
+if M == 1
+    Ycallm = Ycallm.';
+    stdYcallm = stdYcallm.';
+end % if
+
+Yc.mean.E = Ycallm(:, ExcitedHarm - MeasHarm(1) + 1);
+Yc.mean.NE.even = Ycallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+Yc.mean.NE.odd = Ycallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+
+Yc.std.E = stdYcallm(:, ExcitedHarm - MeasHarm(1) + 1);
+Yc.std.NE.even = stdYcallm(:, NonExcitedHarm.even.inband - MeasHarm(1) + 1);
+Yc.std.NE.odd = stdYcallm(:, NonExcitedHarm.odd.inband - MeasHarm(1) + 1);
+
+% estimate total distortion on FRF measurement via extrapolation level distortion at inband non-excited odd harmonics to excited odd harmonics
+% note: take absolute value !!
+Ysall = interp1(NonExcitedHarm.odd.inband, abs(Yc.mean.NE.odd).', ExcitedHarm).';       % linear interpolation is performed for each column
+G.stdNL = Ysall ./ abs(U.mean.E);
+
+% estimate noise level on FRF measurement via extrapolation noise level at inband non-excited harmonics to excited odd harmonics
+AllInBandNE = [NonExcitedHarm.odd.inband; NonExcitedHarm.even.inband];
+AllYcstdNE = [Yc.std.NE.odd.'; Yc.std.NE.even.'];           % row index is the frequency, column index the number of realisations
+[AllInBandNE, TheIndex] = sort(AllInBandNE);
+AllYcstdNE = AllYcstdNE(TheIndex, :);
+Ynall = interp1(AllInBandNE, AllYcstdNE, ExcitedHarm).';    % linear interpolation is performed for each columns
+G.stdn.NE = Ynall ./ abs(U.mean.E);
