@@ -52,7 +52,7 @@ begin
 	Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
 	Ω = R₀ * (0.9:0.001:1.1)
 	
-	for r in 1:num_repeations
+	Threads.@threads for r in 1:num_repeations
 		i = rand(ĩ, num_of_measurements)u"A"
 		
 		uₙ = R₀ * i + rand(Normal_nᵤ, num_of_measurements)u"V"
