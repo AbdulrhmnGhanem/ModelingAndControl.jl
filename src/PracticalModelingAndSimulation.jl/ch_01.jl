@@ -17,8 +17,9 @@ end
 # ╔═╡ 1bee3436-edd1-11ed-2fbd-873b2824b63d
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ 98ca666d-fca1-4e8f-950d-c66a8cb81db3
@@ -34,7 +35,7 @@ end
 # ╔═╡ 32cccc2d-9eef-43c5-a441-fd112c2272e1
 md"# Analytical Solutions for ODEs
 
-!!! warning 
+!!! warning
 	Julia doesn't encourage analytcial solutions, so I am going to use `DifferentialEquations.jl` which takes a numerical approach just to get used to its API.
 "
 
@@ -68,8 +69,8 @@ md"### Analytical solution"
 
 # ╔═╡ 8db1e5f5-2591-4c69-a5e0-f9521dce75ac
 begin
-	u(t) = 
-sin(10t) * (0.00625 - 0.00625 * cos(20t)) + (0.00625 * sin(20t) - 0.125t) * cos(10t) 
+	u(t) =
+sin(10t) * (0.00625 - 0.00625 * cos(20t)) + (0.00625 * sin(20t) - 0.125t) * cos(10t)
 #  analytical solution using wolfram alpha https://www.wolframalpha.com/input?i=u%27%27+%3D+2.5sin%2810t%29+-+100u%28t%29%2C+u%280%29%3D0%2C+u%27%280%29%3D0
 
 	t = range(tspan..., 1000)
@@ -114,7 +115,7 @@ begin
 		du[1] = y₂
 		du[2] = -y₁ - 0.125y₂
 	end
-	
+
 	u0_9 = [1.0, 0.0]
 	prob_9 = ODEProblem(ode_9, u0_9, tspan)
 	sol_9 = solve(prob_9, Tsit5())
@@ -122,7 +123,7 @@ end;
 
 # ╔═╡ 28b2bb6a-d138-45a3-84d1-e7d5c7d0d712
 begin
-	y₁(t) = 
+	y₁(t) =
 (cos(t * sqrt(255) / 16) / ℯ^(t / 16)) + ((sqrt(255) * sin(t * sqrt(255) / 16)) / (255 * ℯ^(t / 16)))
 y₂(t) = -((16 * sqrt(255) * sin(t * sqrt(255) / 16) / (255 * ℯ^(t/16))))
 	analytcial_ys₁ = y₁.(t)
@@ -136,7 +137,7 @@ begin
 		xaxis = "Time",
 		label = ["y₁" "y₂"]
 	)
-	
+
 	plot!(t, [analytcial_ys₁, analytcial_ys₂];
 		ls=:dash,
 		lw=2,
@@ -248,7 +249,7 @@ md"""
 begin
 	function ode_13(ddu, du, u, p, t)
 		A, B, C, D = p
-		@. ddu = (D - B * du - C * u) / A 
+		@. ddu = (D - B * du - C * u) / A
 	end
 	params = [A, B, C, D]
 	u0_13 = [a]
@@ -272,7 +273,7 @@ x(t) &= sin(2t)\\
 Ł\{x(t)\} &= \frac{2}{(s^2 + 4)}
 \end{align}$
 
-!!! warning 
+!!! warning
 	We're using `SymPy` here because appearently no one cares about analytcial laplace transforms in the Julia ecosystem.
 "
 
@@ -309,7 +310,7 @@ y(0) &= 0.5
 # ╔═╡ 3fb87ccb-a9c1-4e52-9d7e-849f86dbd39a
 begin
 	@vars yₛ
-	
+
 	y_18 = SymFunction("y")(tₛ)
 	ode_18 = Eq(diff(y_18, tₛ) + 2 * y_18, 0)
 	lhs_18 = laplace_transform(ode_18.lhs, tₛ, s)[1]

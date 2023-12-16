@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 3a12645a-ff8f-4540-a1b2-1f75f8a4e3f9
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ f82bcf92-9501-4aac-8399-2659fdbd9593
 using Plots, DifferentialEquations
@@ -222,7 +224,7 @@ function runge_kutta(f, h, tspan, f0)
 		k1 = f(tspan[i], y_[i])
 		k2 = f(tspan[i] + h/2, y_[i] + h * k1/2)
 		k3 = f(tspan[i] + h/2, y_[i] + h * k2/2)
-		k4 = f(tspan[i] + h/2, y_[i]+ h * k3) 
+		k4 = f(tspan[i] + h/2, y_[i]+ h * k3)
 		y_[i+1] = y_[i] + (k1 + 2k2 + 2k3 + k4) * h/6
 	end
 	return tspan, y_[1:end-1]
@@ -262,7 +264,7 @@ function runge_kutta_gill(f, h, tspan, f0)
 	b = (2 - √2) / 2
 	c = √2/2
 	d = 1 + √2/2
-	
+
 	tspan = collect(tspan[1]:h:tspan[2])
 	steps_num = length(tspan)
 	y_ = [f0, zeros(steps_num)...]
@@ -270,7 +272,7 @@ function runge_kutta_gill(f, h, tspan, f0)
 		k1 = h * f(tspan[i], y_[i])
 		k2 = h * f(tspan[i] + h/2, y_[i] + k1/2)
 		k3 = h * f(tspan[i] + h/2, y_[i] + a * k1 + b * k2)
-		k4 = h * f(tspan[i] + h, y_[i]+ c * b * k2 + d * k3) 
+		k4 = h * f(tspan[i] + h, y_[i]+ c * b * k2 + d * k3)
 		y_[i+1] = y_[i] + (k1 + k4)/6 + (b * k2 + d * k3)/3
 	end
 	return tspan, y_[1:end-1]
@@ -339,7 +341,7 @@ For Milne we have to use other alogrithms to perdict $y_{2}$, and $y_{i+2}$. We 
 function milne(f, h, tspan, f0)
 	tspan = collect(tspan[1]:h:tspan[2])
 	steps_num = length(tspan)
-	
+
 	# using euler method to get an estimate for y_[2]
 	f1 = f0 + h * f(tspan[1], f0)
 	y_ = [f0, f1, zeros(steps_num - 2)...]

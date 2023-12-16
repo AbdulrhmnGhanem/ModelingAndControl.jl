@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 2f54993a-9bac-11ee-392a-735f95358d60
 # ╠═╡ show_logs = false
 begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
     import Pkg
-    Pkg.activate("../..")
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ d92b47cc-60e8-4cb7-b5da-948c52dff469
 using Random, Plots, DSP, StatsBase
@@ -19,9 +21,9 @@ md"# Exercise 12.b: The effect of filtering input noise with (varying IV lag)
 
 !!! purpose
 	See Exercise `12.a`.
-	
+
 	LS → is baised due to the noise on the input `nᵢ` (filtering the input doesn't have an effect when using LS).
-	
+
 	IV → The bias becomes smaller with increasing the lag, but the std increases with it. **The IV works well if the bandwidth of the generator signal is much smaller than the noise distribution**.
 "
 
@@ -64,7 +66,7 @@ begin
                  prev -> filt(b, a, prev) |>
                  prev -> prev[Nₜᵣₐₙₛ+1:end] |>
 				 prev -> prev / std(prev) * iₘₐₓ
-            
+
 			i = i₀ + nᵢ
             u = u₀ + nᵤ
 

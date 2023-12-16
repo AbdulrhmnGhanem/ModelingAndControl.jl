@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ da3a4744-0ab0-11ee-0066-05339cb401a8
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 98fd8b9f-436e-4050-a212-e47d0318bc66
 using Plots
@@ -50,7 +52,7 @@ end
 begin
 	tspan = (0, 10)
 	ddf = @second_order (du, u, t) -> 4t - (4/5)du - 2u
-	
+
 	h_0 = 0.2
 	f0 = 1
 	f1 = 2
@@ -73,9 +75,9 @@ md"### Euler - Example 2"
 
 # ╔═╡ 176c5d9a-2edd-463e-86c4-c3c03ec0febb
 begin
-	tspan_2 = (0, 2.5) 
+	tspan_2 = (0, 2.5)
 	ddf_2 = @second_order (du, u, t) -> -6du - 9u
-	
+
 	f_2_anaytical(u) = exp(-3u) * (2 + 6u)
 	sol_analytical_2 = collect(tspan[1]:h_0:tspan[2]), f_2_anaytical.(collect(tspan[1]:h_0:tspan[2]))
 
@@ -95,7 +97,7 @@ begin
 		ylabel="u(t)",
 		label="Analytical"
 	)
-	
+
 	plot!(sol_euler_2_a;
 		label="Euler (h=$h_2_a)",
 		ls=:dot
@@ -107,13 +109,13 @@ begin
 end
 
 # ╔═╡ 9ced3fdc-9a9d-49e9-a8fc-e60b8c4ad4c0
-md"### Euler - Example 3" 
+md"### Euler - Example 3"
 
 # ╔═╡ 6068434b-15ea-47a3-a8a9-71a0c891b061
 begin
-	tspan_3 = (0, 12) 
+	tspan_3 = (0, 12)
 	ddf_3 = @second_order (du, u, t) -> -sin(t)
-	
+
 	f_3_anaytical(u) = sin(u) - u
 	sol_analytical_3 = collect(tspan_3[1]:h_0:tspan_3[2]), f_3_anaytical.(collect(tspan_3[1]:h_0:tspan_3[2]))
 
@@ -131,7 +133,7 @@ begin
 		ylabel="u(t)",
 		label="Analytical"
 	)
-	
+
 	plot!(sol_euler_3;
 		label="Euler",
 		ls=:dot
@@ -139,13 +141,13 @@ begin
 end
 
 # ╔═╡ 88feeded-7381-42f5-8d00-9e10687c7b26
-md"### Euler - Example 4" 
+md"### Euler - Example 4"
 
 # ╔═╡ 6bfa972a-9c93-479f-853d-e268e06ea0ce
 begin
-	tspan_4 = (0, 20) 
+	tspan_4 = (0, 20)
 	ddf_4 = @second_order (du, u, t) -> sin(t) - du
-	
+
 	f_4_anaytical(u) = (1/2) * (-5 * exp(-u) - sin(u) - cos(u) + 8)
 	sol_analytical_4 = collect(tspan_4[1]:h_0:tspan_4[2]), f_4_anaytical.(collect(tspan_4[1]:h_0:tspan_4[2]))
 
@@ -163,7 +165,7 @@ begin
 		ylabel="u(t)",
 		label="Analytical"
 	)
-	
+
 	plot!(sol_euler_4;
 		label="Euler",
 		ls=:dot
@@ -175,17 +177,17 @@ md"### Euler - Example 5"
 
 # ╔═╡ 205182a7-4f6a-4b80-83a1-a8e08fd81a9f
 begin
-	tspan_5 = (0, 20) 
+	tspan_5 = (0, 20)
 	ddf_5 = @second_order (du, u, t) -> sin(u*t) - du
 
 	h_5_a = 0.025
 	h_5_b = 0.05
 	h_5_c = 0.1
 	h_5_d = 0.2
-	
+
 	f0_5 = 1.0
 	f1_5 = 2.0
-	
+
 	sol_euler_5_a = euler_2nd_order(ddf_5, h_5_a, tspan_5, f0_5, f1_5)
 	sol_euler_5_b = euler_2nd_order(ddf_5, h_5_b, tspan_5, f0_5, f1_5)
 	sol_euler_5_c = euler_2nd_order(ddf_5, h_5_c, tspan_5, f0_5, f1_5)
@@ -222,7 +224,7 @@ function runge_kutta_2nd_order(f, h, tspan, f0, f1)
 	for i in range(1, steps_num - 1)
 		k1 = f(y_[i][2], y_[i][1], tspan[i])
 		k2 = f(y_[i][2]+ h * k1[2] / 2, y_[i][1] + h * k1[1] / 2, tspan[i]+ h / 2)
-		k3 = f(y_[i][2] + h * k2[2] / 2, y_[i][1] + h * k2[1] / 2, tspan[i] + h / 2) 
+		k3 = f(y_[i][2] + h * k2[2] / 2, y_[i][1] + h * k2[1] / 2, tspan[i] + h / 2)
 		k4 = f(y_[i][2] + h * k3[2], y_[i][1] + h * k3[1], tspan[i] + h)
 		y_[i+1] = y_[i] + h * (k1 + 2k2 + 2k3 + k4)/6
 	end
@@ -235,17 +237,17 @@ md"### Runge-Kutta - Example 6"
 
 # ╔═╡ 366175ef-e95e-4c49-ab8a-e8d9c00ca952
 begin
-	tspan_6 = (0, 2) 
+	tspan_6 = (0, 2)
 	ddf_6 = @second_order (du, u, t) -> 4t - (4/5)du - 2u
 
 	h_6_a = 0.1
 	h_6_b = 0.2
 	h_6_c = 0.3
 	h_6_d = 0.4
-	
+
 	f0_6 = 1.0
 	f1_6 = 2.0
-	
+
 	sol_rk_6_a = runge_kutta_2nd_order(ddf_6, h_6_a, tspan_6, f0_6, f1_6)
 	sol_rk_6_b = runge_kutta_2nd_order(ddf_6, h_6_b, tspan_6, f0_6, f1_6)
 	sol_rk_6_c = runge_kutta_2nd_order(ddf_6, h_6_c, tspan_6, f0_6, f1_6)
@@ -279,7 +281,7 @@ md"### Runge-Kutta - Example 7"
 
 # ╔═╡ 8c08d1b1-52af-4f6b-ba74-4ac9f2a3d979
 begin
-	tspan_7 = (0, 3) 
+	tspan_7 = (0, 3)
 	ddf_7 = @second_order (du, u, t) -> -6du - 9u
 
 	f_7_anaytical(u) = exp(-3u) * (6u + 2)
@@ -288,7 +290,7 @@ begin
 	h_7 = 0.2
 	f0_7 = 2.0
 	f1_7 = 0.0
-	
+
 	sol_rk_7 = runge_kutta_2nd_order(ddf_7, h_7, tspan_7, f0_7, f1_7)
 	sol_euler_7 = euler_2nd_order(ddf_7, h_7, tspan_7, f0_7, f1_7)
 end;
@@ -301,12 +303,12 @@ begin
 		ylabel="u(t)",
 		label="Runge-Kutta"
 	)
-	
+
 	plot!(sol_euler_7;
 		ls=:dot,
 		label="Euler"
 	)
-	
+
 	plot!(sol_analytical_7;
 		label="Analytical",
 		ls=:dash
@@ -318,13 +320,13 @@ md"### Runge-Kutta - Example 8"
 
 # ╔═╡ 5c48ab36-0148-4d6e-afbe-65306e6f58a7
 begin
-	tspan_8 = (0, 15) 
+	tspan_8 = (0, 15)
 	ddf_8 = @second_order (du, u, t) -> -sin(t)
 
 	h_8 = 0.3
 	f0_8 = 0.0
 	f1_8 = 0.0
-	
+
 	sol_rk_8 = runge_kutta_2nd_order(ddf_8, h_8, tspan_8, f0_8, f1_8)
 	sol_euler_8 = euler_2nd_order(ddf_8, h_8, tspan_8, f0_8, f1_8)
 end;
@@ -337,7 +339,7 @@ begin
 		ylabel="u(t)",
 		label="Runge-Kutta"
 	)
-	
+
 	plot!(sol_euler_8;
 		ls=:dot,
 		label="Euler"
@@ -346,7 +348,7 @@ end
 
 # ╔═╡ c953a1bd-0c46-4e2a-a664-ea58ffcab1de
 begin
-	tspan_9 = (0, 15) 
+	tspan_9 = (0, 15)
 	ddf_9 = @second_order (du, u, t) -> sin(t) - du
 
 	f_9_anaytical(u) = (1/2) * (-5 * exp(-u) - sin(u) - cos(u) + 8)
@@ -355,7 +357,7 @@ begin
 	h_9 = 0.25
 	f0_9 = 1.0
 	f1_9 = 2.0
-	
+
 	sol_rk_9 = runge_kutta_2nd_order(ddf_9, h_9, tspan_9, f0_9, f1_9)
 	sol_euler_9 = euler_2nd_order(ddf_9, h_9, tspan_9, f0_9, f1_9)
 end;
@@ -373,7 +375,7 @@ begin
 		ls=:dash,
 		label="Analytcial"
 	)
-	
+
 	plot!(sol_euler_9;
 		ls=:dot,
 		label="Euler"
@@ -389,11 +391,11 @@ function adams_multon_2nd_order(f, h, tspan, f0, f1; steps=4)
 	if !(steps in allowed_steps)
 		throw(error("Invalid step size for Adams-Multon! Allowed steps sizes are $allowed_steps."))
 	end
-	
+
 	tspan = collect(tspan[1]:h:tspan[2])
 	steps_num = length(tspan)
 	y_ = [[f0, f1], Iterators.repeated([0.0, 0.0], steps_num)...]
-	
+
 	lookahead = steps - 1
 	for i in range(1, steps_num - lookahead)
 		k1() = f(y_[i][2],y_[i][1], tspan[i])
@@ -405,19 +407,19 @@ function adams_multon_2nd_order(f, h, tspan, f0, f1; steps=4)
 		if steps == 1
 			continue
 		end
-		
+
 		y_[i+1] = y_[i] + (h/2) * (k1() + k2())
 		if steps == 2
 			continue
 		end
-		
+
 		y_[i+2] = y_[i+1] + (3h/2) * k2() - (h/2) * k1()
 		y_[i+2] = y_[i+1] + h * ((5/12) * k3() + (2/3) * k2() - (1/2) * k1())
 
 		if steps == 3
 			continue
 		end
-		
+
 		y_[i+3] = y_[i+2] + h * ((23/12) * k3() - (4/3) * k2() + (5/12) * k1())
 		y_[i+3] = y_[i+2] + h * ((3/8) * k4() + (19/24) * k3() - (5/24) * k2() + (1/24) * k1())
 	end
@@ -431,7 +433,7 @@ md"### Adams-Multon - Example 12"
 
 # ╔═╡ 30592fc4-0779-407c-9b7f-b8737cd028dc
 begin
-	tspan_12 = (0, 15) 
+	tspan_12 = (0, 15)
 	ddf_12 = @second_order (du, u, t) -> sin(u*t) - du
 
 	h_12 = 0.1
@@ -458,12 +460,12 @@ begin
 		label="steps=2",
 		ls=:dot
 	)
-	
+
 	plot!(sol_am_12_3;
 		label="steps=3",
 		ls=:dashdot
 	)
-	
+
 	plot!(sol_am_12_4;
 		label="steps=4"
 	)

@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 057dc498-9761-11ee-2942-a58010fc0fe8
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ e6323fa8-7bde-4beb-bd77-972215bd2d13
 using Random, Distributions, LinearAlgebra, Plots, Unitful
@@ -34,27 +36,27 @@ begin
 	num_of_measurements = 100
 	num_repeations = Int(10e4)
 
-	
+
 	χ² = rand(Χ², num_repeations*100)
 	Χ²_μ, Χ̃²= mean(χ²)u"V", median(χ²)u"V"
 
 	Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
 	Ω = R₀ * (0.8:0.001:1.1)
 
-	
+
 	R̂1 = zeros((num_repeations, 2))u"Ω"
 	R̂2 = zeros((num_repeations, 2))u"Ω"
 
 	Threads.@threads for r in 1:num_repeations
 		i = rand(ĩ, num_of_measurements)u"A"
-		
+
 		uₙ = R₀ * i + rand(Χ², num_of_measurements)u"V"
 		uₙ_calibrated_with_mean = uₙ .- Χ²_μ
 		uₙ_calibrated_with_median = uₙ .- Χ̃²
-		
+
 		R̂1[r, 1] =	ustrip(i) \ ustrip(uₙ_calibrated_with_mean)u"Ω"  # LS
 		R̂1[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_mean, i), Ω)  # LAV
-		
+
 		R̂2[r, 1] =	ustrip(i) \ ustrip(uₙ_calibrated_with_median)u"Ω"  # LS
 		R̂2[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_median, i), Ω)  # LAV
 	end

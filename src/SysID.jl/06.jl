@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 6c9c5140-969d-11ee-30b0-5d1f501a232b
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ aa954823-05a5-4343-a78d-10f034dddf56
 using LinearAlgebra, Plots, Polynomials
@@ -60,8 +62,8 @@ md"
 "
 
 # ╔═╡ 02447fa2-5ad9-47a2-93b4-ed0650385a7c
-plot(conds; 
-	yaxis=:log, 
+plot(conds;
+	yaxis=:log,
 	ylims=(10e0, 10e20),
 	xlabel="Order",
 	labels=reshape(["unstable", "stable"], 1, :) ,
@@ -70,8 +72,8 @@ plot(conds;
 )
 
 # ╔═╡ 7f6f06fa-a857-4554-ba14-6880c52e0b5d
-plot(rmss; 
-	yaxis=:log, 
+plot(rmss;
+	yaxis=:log,
 	ylims=(10e-10, 10e10),
 	xlabel="Order",
 	labels=reshape(["unstable", "stable"], 1, :) ,

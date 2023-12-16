@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 5bda20ac-95a2-11ee-0f56-851af662b57a
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 1757b3df-36f3-4bac-9465-5c126e3f553a
 using Random, Distributions, LinearAlgebra, Plots, Unitful
@@ -26,10 +28,10 @@ begin
 	nᵤ2 = Uniform(-√3σᵤ, √3σᵤ)
 	num_of_measurements = [1 2 4 8]
 	num_repeations = Int(10e5)
-	
+
 	R̂1 = zeros((num_repeations, length(num_of_measurements),))u"Ω"
 	R̂2 = zeros((num_repeations, length(num_of_measurements),))u"Ω"
-	
+
 	for n in 1:length(num_of_measurements)
 		for r in 1:num_repeations
 			i = fill(i₀, num_of_measurements[n])
@@ -43,7 +45,7 @@ end
 
 # ╔═╡ 3411d10f-26b4-498e-a099-fedaaa1d60bd
 md"$Std(nᵤ2) = \sqrt{\frac{(b-a)^2}{12}}$
-$\sqrt{\frac{(0.2\sqrt{3}+0.2\sqrt{3})^2}{12}} = 0.2 = \sigma$ 
+$\sqrt{\frac{(0.2\sqrt{3}+0.2\sqrt{3})^2}{12}} = 0.2 = \sigma$
 "
 
 # ╔═╡ ffa6f39c-92c3-4318-9fd1-dfeb9c4c1dac

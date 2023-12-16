@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 61fbae56-aae4-4070-9634-7c9c980f73e4
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 5560fc2e-b983-4112-9bf9-f83fd9744f25
 using Plots, DifferentialEquations, LinearAlgebra, ModelingToolkit
@@ -72,7 +74,7 @@ let
 
 $x_1 = x, \ ẋ_1 = x_2$
 
-then 
+then
 
 $\begin{cases}
 	ẋ_1 - x_2 = 0 \\

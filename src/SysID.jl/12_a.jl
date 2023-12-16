@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 0128b83c-986d-11ee-38be-2fd8b3ac03a0
 # ╠═╡ show_logs = false
 begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
     import Pkg
-    Pkg.activate("../..")
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 4b1d5b72-2d3b-4c7e-a456-1beace344605
 using Random, Plots, DSP, StatsBase
@@ -22,11 +24,11 @@ md"# Exercise 12.a: The effect of filtering input noise with (varying cutoff fre
 
 	* On removing current noise `nᵢ` the bais disappears for all configurations.
 	* Removing the voltage noise doesn't affect the bias in these configurations.
-	
+
 	LS → is baised due to the noise on the input `nᵢ` (filtering the input doesn't have an effect when using LS).
-	
+
 	IV → is more complicated. For the white noise situation, no bias is visible. However, once the output noise is filtered, a bias becomes visible. The relative bias is proportional to the ratio of the autocorrelation functions of the noise and the current `Rₙᵢₙᵢ(s)/Rᵢ₀ᵢ₀(s)` 👇️
-		
+
 	![Textbook](https://i.imgur.com/Dcovnk3.png)
 "
 
@@ -82,7 +84,7 @@ begin
 
             IV[s, r] = (u' * iShift) / (iShift' * i)
         end
-		
+
     end
 end
 

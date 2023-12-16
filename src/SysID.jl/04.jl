@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 5bda20ac-95a2-11ee-0f56-851af662b57a
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 1757b3df-36f3-4bac-9465-5c126e3f553a
 using Random, Distributions, LinearAlgebra, Plots, Unitful
@@ -25,9 +27,9 @@ begin
 	nᵤ = Normal(0, σᵤ)  # voltage disturbance
 	num_of_measurements = 100
 	num_repeations = Int(10e5)
-	
+
 	R̂ = zeros((num_repeations, 2))u"Ω"
-	
+
 	for r in 1:num_repeations
 		i = fill(i₀, num_of_measurements)
 		u = R₀ * i + rand(nᵤ, num_of_measurements)u"V"
@@ -40,7 +42,7 @@ end
 md"
 !!! note
 	The signal with the highest SNR should be used as independent variable in order to reduce the systematic error.
-	
+
 	The bias is proportional to the inverse of SNR ($\frac{noise \ power}{signal \ power})$
 "
 

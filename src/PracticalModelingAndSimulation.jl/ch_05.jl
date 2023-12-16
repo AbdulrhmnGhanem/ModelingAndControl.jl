@@ -17,9 +17,11 @@ end
 # ╔═╡ 2cf8e56c-0ec1-11ee-14e3-3bc363d524f0
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 2ec1db18-6f3b-4f29-9420-e210abfe4568
 using Plots, DifferentialEquations, PlutoUI, ModelingToolkit, LinearAlgebra
@@ -44,12 +46,12 @@ begin
 		dy1 = y2
 	    dy2 = y3
 	    dy3 = y4
-	    
+
 		dy4 = t^2 - 3dy3 + sin(t) * dy1 - 8y
-	    
+
 		return [dy1, dy2, dy3, dy4]
 	end
-	
+
 	f0 = [50, 40, 30, 20]
 	tspan_1 =  (0, 2π)
 	prob_1 = ODEProblem(forth_order_ode, f0, tspan_1)
@@ -62,25 +64,25 @@ md"Clip y axis $(@bind clip CheckBox(default=false))"
 # ╔═╡ 93c37c1f-5d3e-4fd1-b3ce-8b01aa6ca873
 begin
 	ylim = clip ? (-700, 300) : (Inf, Inf)
-	
+
 	plot(sol_1;
 		idxs=[4],
 		labels="d³y",
 		ylim,
 	)
-	
+
 	plot!(sol_1;
 		idxs=[3],
 		labels="d²y",
 		ylim,
 	)
-	
+
 	plot!(sol_1;
 		idxs=[2],
 		labels="dy",
 		ylim,
 	)
-	
+
 	plot!(sol_1;
 		idxs=[1],
 		labels="y",
@@ -101,10 +103,10 @@ begin
 		D(y₃) ~ 3 * (10^7)y₂
 	]
 	@named sys_2 = ODESystem(eqs_2)
-	
+
 	f0_2 = [y₁ => 1.0, y₂ => 0.0, y₃ => 0.0]
 	tspan_2 = (0, 10^2)
-	
+
 	prob_2 = ODEProblem(sys_2, f0_2, tspan_2)
 	sys_2
 end
@@ -143,10 +145,10 @@ begin
 	const Kₛ   = 115.83
 	const pCO₂ = 0.9
 	const H = 737
-	
+
 	function akzo_nobel(dy, y, p, t)
 		y₁, y₂, y₃, y₄, y₅, y₆ = y
-		
+
 		r₁ = k₁ * y₁^4 * y₂^0.5
 		r₂ = k₂ * y₃ * y₄
 		r₃ = (k₂ / K) * y₁ * y₅
@@ -155,7 +157,7 @@ begin
 
 		Fᵢₙ = klA * ((pCO₂ / H) - y₂)
 
-		
+
 	    dy[1] = -2r₁ + 2r₂ - r₃ + r₄
 		dy[2] = -0.5r₁ - r₄ - 0.5r₅ + Fᵢₙ
 		dy[3] = r₁ - r₂ + r₃
@@ -164,7 +166,7 @@ begin
 		dy[6] = Kₛ * y₁ * y₄ - y₆
 		dy = M * dy
 	end
-	
+
 	f0_3 = [0.437, 0.00123, 0, 0.007, 0, Kₛ * 0.437 * 0.007]
 	tspan_3 = (0, 180)
 	prob_3 = ODEProblem(akzo_nobel, f0_3, tspan_3)
@@ -182,7 +184,7 @@ begin
 	function HIRES(du, u, p, t)
 		u₁, u₂, u₃, u₄, u₅, u₆, u₇, u₈ = u
 
-		
+
 		du[1] = -1.7u₁ + 0.43u₂ + 8.32u₃ + 0.0007
 		du[2] = 1.71u₁ - 8.75u₂
 		du[3] = -10.03u₃ + 0.43u₄ + 0.035u₅

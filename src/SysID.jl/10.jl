@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ ad8895e8-979b-11ee-3913-5d95eb77891a
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 41f31b91-41b9-4b87-a496-776daff525b6
 using Random, Distributions, LinearAlgebra, Plots, Unitful
@@ -18,7 +20,7 @@ using Random, Distributions, LinearAlgebra, Plots, Unitful
 md"# Exercise 10: Influence of the number of the parameters on the model uncertainty
 
 !!! purpose
-	To show that when we have a prior knowledge about the model (e.g., in this exercise at `t=0`, `y=0`) 
+	To show that when we have a prior knowledge about the model (e.g., in this exercise at `t=0`, `y=0`)
 	increasing the number of the parameters, increases the uncertainty.
     But doesn't necessarily introduce systematic error.
 "
@@ -29,13 +31,13 @@ begin
 	N = 1000
 	nₜ = Normal(0, 1)
 	num_of_repeations = Int(10e5)
-	
+
 	t = LinRange(0, 1, N)
 	y₀ = a₀ * t  # the true system
-	
+
 	ŷ₁ = zeros((num_of_repeations, 2))
 	ŷ₂ = zeros(num_of_repeations)
-	
+
 	Threads.@threads for i in 1:num_of_repeations
 		y = y₀ + rand(nₜ, N)
 
@@ -62,7 +64,7 @@ md"
 stephist([ŷ₁[:,1] ŷ₂];
 	xlabel="Slope",
 	labels=reshape(["Two-Parameter Model (at+b)", "One-Parameter Model (at)"], 1, :),
-	seriestype=:scatter, 
+	seriestype=:scatter,
 	normalize=:pdf,
 )
 
