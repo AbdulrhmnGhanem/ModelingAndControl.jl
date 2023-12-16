@@ -25,7 +25,7 @@ begin
 	num_repeations = Int(10e3)
 	u1₀ = LinRange(-3, 3, num_of_measurements)
 	u2₀ = LinRange(2, 5, num_of_measurements)
-	
+
 	a = 0.1
 	nₜ = Normal(0, 1)
 	y1₀ = a * u1₀
@@ -53,7 +53,7 @@ md"
 
 # ╔═╡ 38270932-1210-42fd-b2c2-721dbda5cd73
 begin
-	plot([ŷ1[:, 1], ŷ2[:, 1]], [ŷ1[:, 2], ŷ2[:, 2]]; 
+	plot([ŷ1[:, 1], ŷ2[:, 1]], [ŷ1[:, 2], ŷ2[:, 2]];
 		seriestype=:scatter,
 		labels=reshape(["u₀ ∈ [-3,3]", "u₀ ∈ [2, 5]"], 1, :),
 		xlabel="Slope",

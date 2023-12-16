@@ -62,8 +62,8 @@ md"
 "
 
 # ╔═╡ 02447fa2-5ad9-47a2-93b4-ed0650385a7c
-plot(conds; 
-	yaxis=:log, 
+plot(conds;
+	yaxis=:log,
 	ylims=(10e0, 10e20),
 	xlabel="Order",
 	labels=reshape(["unstable", "stable"], 1, :) ,
@@ -72,8 +72,8 @@ plot(conds;
 )
 
 # ╔═╡ 7f6f06fa-a857-4554-ba14-6880c52e0b5d
-plot(rmss; 
-	yaxis=:log, 
+plot(rmss;
+	yaxis=:log,
 	ylims=(10e-10, 10e10),
 	xlabel="Order",
 	labels=reshape(["unstable", "stable"], 1, :) ,

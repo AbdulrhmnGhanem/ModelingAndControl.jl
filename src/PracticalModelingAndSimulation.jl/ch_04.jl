@@ -117,7 +117,7 @@ begin
 	end
 	f0_2 = [1]
 	tspan_2 = (0,0.2)
-	
+
 	prob_2 = ODEProblem(df_2, f0_2, tspan_2)
 end;
 
@@ -168,7 +168,7 @@ begin
 	function df_3(du, u, p, t)
 		 du = cos(1001t)
 	end
-	
+
 	f0_3 = [1.001]
 	tspan_3 = (0, 0.75)
 	prob_3 = ODEProblem(df_3, f0_3, tspan_3);
@@ -180,7 +180,7 @@ begin
 	)
 	q = 0
 	sol_3_euler = first_order.euler((u, t) -> df_3(q, u, [], t),  h_1_b, tspan_3, f0_3[1])
-	
+
 	sol_3_dp5 = solve(prob_3, DP5();
 			reltol=1e-3,
 			abstol=1e-5,
@@ -210,7 +210,7 @@ begin
 	plot!(sol_3_dp5, xlims=(0,0.75); label="DP5", ls=:dash)
 	plot!(sol_3_vcabm, xlims=(0,0.75), label="VCABM", ls=:dashdot)
 	plot!(sol_3_qndf, xlims=(0,0.75), label="QNDF", ls=:dot)
-	
+
 end
 
 # ╔═╡ 239e7a5f-c883-4bda-bb26-7e025c4c6134
@@ -264,7 +264,7 @@ sol_6_rodas = @btime solve(prob_6, Rodas4();
 # ╔═╡ 4a913865-b84d-4d2b-9168-ddd0d93f04ab
 begin
 	input(t) = abs(sin(333t))
-	ddf_6_2 = second_order.@second_order (du, u, t) -> 
+	ddf_6_2 = second_order.@second_order (du, u, t) ->
 				@. (10^4) * input(t) - 100du - (10^4)u
 
 	h = 10e-5

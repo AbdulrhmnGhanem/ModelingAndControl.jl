@@ -27,9 +27,9 @@ begin
 	nᵤ = Normal(0, 1)  # voltage disturbance
 	num_of_measurements = [10 100 1000 10_000]
 	num_repeations = 1000
-	
+
 	R̂ = zeros((num_repeations, length(num_of_measurements),))u"Ω"
-	
+
 	for n in 1:length(num_of_measurements)
 		for r in 1:num_repeations
 			i = fill(i₀, num_of_measurements[n])
@@ -52,7 +52,7 @@ md"### The standard deviation is proportional to $-\frac{1}{\sqrt N}$"
 # ╔═╡ 54e3a4e9-d05d-462c-83e3-135dbf344198
 begin
 	plot(num_of_measurements, emperical_std;
-		seriestype=:scatter, 
+		seriestype=:scatter,
 		xaxis=:log,
 		yaxis=:log,
 		legend=false,

@@ -74,7 +74,7 @@ let
 
 $x_1 = x, \ ẋ_1 = x_2$
 
-then 
+then
 
 $\begin{cases}
 	ẋ_1 - x_2 = 0 \\

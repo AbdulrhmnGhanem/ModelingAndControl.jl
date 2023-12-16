@@ -28,11 +28,11 @@ begin
 	nᵤ2 = Normal(0, 4)
 	num_of_measurements = 100
 	num_repeations = Int(10e5)
-	
+
 	R̂ = zeros((num_repeations, 2))u"Ω"
 	w = [fill(nᵤ1.:σ, num_of_measurements)... fill(nᵤ2.:σ^2, num_of_measurements)...]'
-	
-	
+
+
 	for r in 1:num_repeations
 		i1 = rand(current_distribution, num_of_measurements)u"A"
 		i2 = rand(current_distribution, num_of_measurements)u"A"
@@ -40,7 +40,7 @@ begin
 		u2 = R₀ * i2 + rand(nᵤ2, num_of_measurements)u"V"
 		i = [i1... i2...]'
 		u = [u1... u2...]'
-		
+
 		R̂[r, 1] = (ustrip(i) \ ustrip(u))[1]u"Ω"
 		R̂[r, 2] = (ustrip((u' * (i ./ w)) / (i' * (i ./ w))))[1]u"Ω"
 	end
