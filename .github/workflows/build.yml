@@ -32,10 +32,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-julia
 
-      #   - name: Install Dependencies
-      #     run: |
-      #       julia -e 'using Pkg; Pkg.instantiate()'
-
       - name: Run build.jl
         run: julia --project=. build.jl
 
