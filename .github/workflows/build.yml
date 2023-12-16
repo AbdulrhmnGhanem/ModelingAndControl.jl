@@ -2,7 +2,7 @@ name: Build website
 on:
   push:
     branches:
-      - main
+      - ci
 
 jobs:
   build:
@@ -20,6 +20,8 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
 
+      - uses: julia-actions/julia-buildpkg@v1
+
       - name: Cache Pluto.jl cache
         uses: actions/cache@v2
         with:
@@ -29,9 +31,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-julia
 
-      - name: Install Dependencies
-        run: |
-          julia -e 'using Pkg; Pkg.instantiate()'
+      #   - name: Install Dependencies
+      #     run: |
+      #       julia -e 'using Pkg; Pkg.instantiate()'
 
       - name: Run build.jl
         run: julia --project=. build.jl
