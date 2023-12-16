@@ -6,4 +6,4 @@ So far it includes the implementation of two books using julia:
 2. [Mastering System Identification in 100 Exercises](https://onlinelibrary.wiley.com/doi/book/10.1002/9781118218532)
 
 ## notes
-1. In computer and control systems (Feb 2022 - )
+1. In computer and control systems (Feb 2023 - )
