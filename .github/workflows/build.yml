@@ -20,6 +20,8 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
 
+      - uses: py-actions/py-dependency-install@v4
+
       - uses: julia-actions/julia-buildpkg@v1
 
       - name: Cache Pluto.jl cache

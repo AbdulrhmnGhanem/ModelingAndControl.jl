@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.25
+# v0.19.27
 
 using Markdown
 using InteractiveUtils
@@ -84,14 +84,6 @@ plot(wall_model[x], heat_arcoss_wall[end, :];
 	ylim=(0, 700)
 )
 
-# ╔═╡ 027983e4-75ef-49e1-b73b-1e632e33079d
-plot(wall_model[t], heat_arcoss_wall[end, :];
-	label=nothing,
-	xlabel="Distance (m)",
-	ylabel="Temperature (°C)",
-	ylim=(0, 700)
-)
-
 # ╔═╡ 28cad6ea-064c-4774-851d-69ff94a6461c
 wall_model[T(t, x)]
 
@@ -163,9 +155,6 @@ end
 # ╔═╡ e638dfe8-ae17-4fc6-b9ff-8fa92c4e1404
 plot(sol[x], sol[y], u_sol)
 
-# ╔═╡ a5ff5ec5-ae64-4c0c-a55b-3bdbe73a9a12
-prob
-
 # ╔═╡ Cell order:
 # ╟─a5e96864-549e-49ec-8d40-9ee3bd8a5756
 # ╠═884380c2-2a81-11ee-35db-2bc32422997c
@@ -174,7 +163,6 @@ prob
 # ╟─db1e018b-03a8-4746-8040-37848b084f77
 # ╠═5c3b9561-0a96-40f6-865f-a606082c64de
 # ╠═9f2252c9-72d5-47ba-82b9-7e3927e0f048
-# ╠═027983e4-75ef-49e1-b73b-1e632e33079d
 # ╠═28cad6ea-064c-4774-851d-69ff94a6461c
 # ╠═86091c22-d19e-49b2-8574-8b59326c5bb8
 # ╠═aed303d8-faff-4906-b5cc-3b6b1dc45ebb
@@ -183,4 +171,3 @@ prob
 # ╟─3ba4a33f-f549-4d22-b2fb-2fbe0f07ec1b
 # ╠═8599e14e-1fae-4dcc-9eea-2a0bf3dac11f
 # ╠═e638dfe8-ae17-4fc6-b9ff-8fa92c4e1404
-# ╠═a5ff5ec5-ae64-4c0c-a55b-3bdbe73a9a12

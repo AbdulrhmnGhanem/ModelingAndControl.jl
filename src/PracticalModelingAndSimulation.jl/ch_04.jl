@@ -56,8 +56,8 @@ end
 # ╔═╡ 0575d574-c655-4c24-aafd-ad4555310477
 # ╠═╡ show_logs = false
 begin
-	first_order = ingredients("../src/ch_02.jl")
-	second_order = ingredients("../src/ch_03.jl")
+	first_order = ingredients("ch_02.jl")
+	second_order = ingredients( "ch_03.jl")
 end;
 
 # ╔═╡ f3dc814b-caae-49a1-be98-6ff76cf7b470
@@ -308,12 +308,12 @@ julia in mciro seconds while MATLAB in milliseconds."
 # ╠═c5fe5b66-016b-426a-b7cc-fe673d3091d6
 # ╟─10dc5bce-7a41-4158-9460-408025db4694
 # ╠═635aff41-8939-485c-906e-c28a849ae33c
-# ╠═7622f3e0-4070-4ee6-b14c-f26533be85aa
+# ╟─7622f3e0-4070-4ee6-b14c-f26533be85aa
 # ╟─60b75a0b-785c-450d-ab98-ff8998c73045
-# ╠═3d1022c5-3c7f-49a5-85d6-5907388d69a9
+# ╟─3d1022c5-3c7f-49a5-85d6-5907388d69a9
 # ╠═e655b3f1-0918-4b95-86d4-d96e41dfea39
 # ╠═20f80f83-951d-4480-a9b8-dfc63e72ddbd
-# ╠═a74c72ea-143d-4dbd-a004-b4c59988bc23
+# ╟─a74c72ea-143d-4dbd-a004-b4c59988bc23
 # ╟─239e7a5f-c883-4bda-bb26-7e025c4c6134
 # ╠═53ca1315-53f4-412d-a7c6-122e5453ca80
 # ╠═7b5624e6-3d9f-48d1-bb09-af9a3a9f530c
@@ -323,5 +323,5 @@ julia in mciro seconds while MATLAB in milliseconds."
 # ╠═77f8c161-3eea-4162-8b30-8af08c7da4b5
 # ╠═da96a526-8456-4127-863e-5c4e4a147bfd
 # ╠═4a913865-b84d-4d2b-9168-ddd0d93f04ab
-# ╠═d122d886-9506-4847-b6d4-31869cc1da1c
-# ╠═cee124e3-c3f9-4971-8499-bd6e7ab9976e
+# ╟─d122d886-9506-4847-b6d4-31869cc1da1c
+# ╟─cee124e3-c3f9-4971-8499-bd6e7ab9976e
