@@ -25,8 +25,7 @@ jobs:
       - name: Cache Pluto.jl cache
         uses: actions/cache@v2
         with:
-          path: |
-            .cache
+          path: .cache
           key: ${{ runner.os }}-julia
           restore-keys: |
             ${{ runner.os }}-julia
@@ -37,3 +36,15 @@ jobs:
 
       - name: Run build.jl
         run: julia --project=. build.jl
+
+      - name: Publish
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        with:
+          source-directory: ".build"
+          destination-github-username: "ghnem"
+          destination-repository-name: "ghnem.github.io"
+          user-email: research@abdulrhmnghanem.tech
+          target-directory: modeling-and-control-books-in-julia
+          target-branch: main
