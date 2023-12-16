@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 6c9c5140-969d-11ee-30b0-5d1f501a232b
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ aa954823-05a5-4343-a78d-10f034dddf56
 using LinearAlgebra, Plots, Polynomials

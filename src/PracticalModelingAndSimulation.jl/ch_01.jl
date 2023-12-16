@@ -17,8 +17,9 @@ end
 # ╔═╡ 1bee3436-edd1-11ed-2fbd-873b2824b63d
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ 98ca666d-fca1-4e8f-950d-c66a8cb81db3

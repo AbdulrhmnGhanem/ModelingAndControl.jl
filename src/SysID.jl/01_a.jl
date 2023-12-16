@@ -7,8 +7,9 @@ using InteractiveUtils
 # ╔═╡ 5bda20ac-95a2-11ee-0f56-851af662b57a
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 

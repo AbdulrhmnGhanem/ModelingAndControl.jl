@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 1aaf132a-96b3-11ee-1a47-7fe4b07f94c5
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("../..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ c05f3ace-fb4c-472b-ae6a-b7bcafb102b3
 using Random, Distributions, LinearAlgebra, Plots

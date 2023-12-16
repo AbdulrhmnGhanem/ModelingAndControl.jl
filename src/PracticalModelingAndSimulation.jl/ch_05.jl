@@ -17,9 +17,11 @@ end
 # ╔═╡ 2cf8e56c-0ec1-11ee-14e3-3bc363d524f0
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ 2ec1db18-6f3b-4f29-9420-e210abfe4568
 using Plots, DifferentialEquations, PlutoUI, ModelingToolkit, LinearAlgebra

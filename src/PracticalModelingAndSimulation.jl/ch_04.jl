@@ -7,9 +7,11 @@ using InteractiveUtils
 # ╔═╡ 287a6854-0c8b-11ee-189b-f505088c3bad
 # ╠═╡ show_logs = false
 begin
-	import Pkg
-	Pkg.activate("..")
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
+
 
 # ╔═╡ f1e1bf1c-c5cd-48d9-8536-42097dada190
 using Plots, DifferentialEquations, BenchmarkTools
