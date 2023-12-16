@@ -39,7 +39,7 @@ begin
 	EiV = zeros(Nᵣ)
 	IV = zeros(Nᵣ)
 	lag = 1
-	
+
 	Threads.@threads for r in 1:Nᵣ
 		i = i₀ + rand(ñᵢ, N)
 		u = u₀ + rand(ñᵤ, N)
@@ -56,7 +56,7 @@ begin
 		deleteat!(u, N-lag+1:N)
 
 		IV[r] = (u' * iShift) / (iShift' * i)
-		
+
 	end
 end
 

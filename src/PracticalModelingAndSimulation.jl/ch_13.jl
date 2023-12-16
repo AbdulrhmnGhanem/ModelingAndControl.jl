@@ -41,35 +41,35 @@ begin
 	Dx = Differential(x)
 	Dtt = Dt^2
 	Dxx = Dx^2
-	
-	
+
+
 	k = 666
 	L = 0.25
 	ρ = 1000
 	cₚ = 500
 	# q = 5e6
-	
+
 	# eq_1 = k * Dxx(T(t, x)) ~ ρ * cₚ * Dt(T(t, x)) + q
 	eq_1 = [
 		k * Dxx(T(t, x)) ~ ρ * cₚ * Dt(T(t, x)),
 	] #+ k * Dx(T(t, x))]
-	
-	
+
+
 	domain_1 = [
 		x ∈ Interval(0.0, L),
 		t ∈ Interval(0.0, 5.0)
 	]
-	
+
 	bcs_1 = [
 		# Inital condition
 		T(0, x) ~ 0.0,
 		Dt(T(t,0)) ~ 680,
 		T(t, L) ~ 0.0,
 		# q(0) ~ 0
-	]  
-	
+	]
+
 	@named wall = PDESystem(eq_1, bcs_1, domain_1, [t, x], [T(t, x)])
-	
+
 	wall_discretization = MOLFiniteDifference([x => 0.01], t)
 	prob_1 = discretize(wall, wall_discretization)
 	wall_model = solve(prob_1; saveat=0.5)
@@ -110,14 +110,14 @@ $\frac{\partial^2 u(x,t)}{\partial t^2} = \frac{K L^2}{M} \frac{\partial^2 u(x,t
 # ╔═╡ 8599e14e-1fae-4dcc-9eea-2a0bf3dac11f
 begin
 	Dyy = Differential(y)^2
-	
+
 	eq = Dxx(u(x, y)) + Dyy(u(x, y)) ~ 0
 
 	temperature_left = 100
 	temperature_right = 75
 	temperature_top = 250
 	temperature_bottom = 300
-	
+
 	width = 1
 	height = 1
 
@@ -127,27 +127,27 @@ begin
 		u(x, 0) ~ temperature_bottom,
 		u(x, height) ~ temperature_top,
 	]
-	
+
 	# Space and time domains
 	domains = [x ∈ Interval(0.0, width),
 	           y ∈ Interval(0.0, height)]
-	
+
 	@named pdesys = PDESystem([eq], bcs, domains, [x, y], [u(x, y)])
-	
+
 	dx = 0.1
 	dy = 0.1
-	
+
 	# Note that we pass in `nothing` for the time variable `t` here since we
 	# are creating a stationary problem without a dependence on time, only space.
 	discretization = MOLFiniteDifference([x => dx, y => dy], nothing, approx_order=2,
 	)
-	
+
 	prob = discretize(pdesys, discretization)
 	sol = NonlinearSolve.solve(prob, NewtonRaphson())
-	
+
 	u_sol = sol[u(x, y)]
-	
-	
+
+
 	heatmap(sol[x], sol[y], u_sol, xlabel="x values", ylabel="y values",
 	        title="Steady State Heat Equation")
 end

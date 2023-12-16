@@ -27,9 +27,9 @@ begin
 	nᵤ = Normal(0, σᵤ)  # voltage disturbance
 	num_of_measurements = 100
 	num_repeations = Int(10e5)
-	
+
 	R̂ = zeros((num_repeations, 2))u"Ω"
-	
+
 	for r in 1:num_repeations
 		i = fill(i₀, num_of_measurements)
 		u = R₀ * i + rand(nᵤ, num_of_measurements)u"V"
@@ -42,7 +42,7 @@ end
 md"
 !!! note
 	The signal with the highest SNR should be used as independent variable in order to reduce the systematic error.
-	
+
 	The bias is proportional to the inverse of SNR ($\frac{noise \ power}{signal \ power})$
 "
 

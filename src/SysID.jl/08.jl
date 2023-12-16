@@ -33,7 +33,7 @@ md"
 	In the book the Laplacian noise is defined with `μ=0` and `σ=1` while in the MATLAB code it's defined with `μ=0` and `b=1`, these are two different distributions.
 
 	A laplace distribution with `μ=0` and `σ=1` is equivalent to `μ=0` and `b=1/√2`.
-	So the normal and laplace distributions in this exercise don't have the same standard deviation. 
+	So the normal and laplace distributions in this exercise don't have the same standard deviation.
 "
 
 # ╔═╡ 2ef4ec2c-d649-44f2-9a40-5664b51f2ebe
@@ -47,20 +47,20 @@ begin
 	Laplace_nᵤ = Laplace(0, 1)
 	num_of_measurements = 100
 	num_repeations = Int(10e4)
-	
+
 	R̂1 = zeros((num_repeations, 2))u"Ω"
 	R̂2 = zeros((num_repeations, 2))u"Ω"
 
 	Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
 	Ω = R₀ * (0.9:0.001:1.1)
-	
+
 	Threads.@threads for r in 1:num_repeations
 		i = rand(ĩ, num_of_measurements)u"A"
-		
+
 		uₙ = R₀ * i + rand(Normal_nᵤ, num_of_measurements)u"V"
 		R̂1[r, 1] =	ustrip(i) \ ustrip(uₙ)u"Ω"  # LS
 		R̂1[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ, i), Ω)  # LAV
-		
+
 		uₗ = R₀ * i + rand(Laplace_nᵤ, num_of_measurements)u"V"
 		R̂2[r, 1] =	ustrip(i) \ ustrip(uₗ)u"Ω"  # LS
 		R̂2[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₗ, i), Ω)  # LAV

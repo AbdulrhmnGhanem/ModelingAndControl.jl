@@ -34,7 +34,7 @@ begin
 		du[1] = u₂
 		du[2] = exp(t) - 2u₁
 	end
-	
+
 	function bc_1(residual, u, p, t)
 		residual[1] = u[1][1]
 		residual[2] = u[end][1] - 1
@@ -104,7 +104,7 @@ begin
 			du[1] = u₂
 			du[2] = -2u₁
 	end
-	
+
 	tspan_3 = (0, π/1)
 	u0_3 = [1.0, 0.0]
 end;
@@ -118,7 +118,7 @@ begin
 		residual[1] = u[1][1] - 1
 		residual[2] = u[end][2]
 	end
-	
+
 	bvp_3_robin = BVProblem(ode_3, bc_3_robin, u0_3, tspan_3)
 	sol_3_robin = solve(bvp_3_robin, GeneralMIRK4(), dt=0.05)
 end;
@@ -144,7 +144,7 @@ begin
 		label="Dirchlet",
 		ylabel="u"
 	)
-	
+
 	plot!(sol_3_robin;
 		idxs=[1],
 		label="robin"
@@ -164,7 +164,7 @@ begin
 	function ode_4(du, u, ω, t)
 		u₁, u₂ = u
 		du[1] = u₂
-		du[2] = ω^2 * u₁ - sinh(t) 
+		du[2] = ω^2 * u₁ - sinh(t)
 	end
 
 	function bc_4(residual, u, p, t)
@@ -178,7 +178,7 @@ begin
 	sols_4 = Vector{ODESolution}(undef, length(ωs))
 	for (i, ω) in enumerate(ωs)
 		bvp_4 = BVProblem(ode_4, bc_4, u0_4, tspan_4, ω)
-		sol_4 = solve(bvp_4, GeneralMIRK4(), dt=0.01)	
+		sol_4 = solve(bvp_4, GeneralMIRK4(), dt=0.01)
 		sols_4[i] = sol_4
 	end
 end;
@@ -228,7 +228,7 @@ begin
 	tspan_5 = (0.0, 1.0)
 	u0_5 = [1.0, 1.0]
 	p_5 = [100.0, -100.0]
-	
+
 	bvp_5 = BVProblem(ode_5, bc_5, u0_5, tspan_5, p_5)
 	sol_5 = solve(bvp_5, GeneralMIRK4(), dt=0.005)
 end;

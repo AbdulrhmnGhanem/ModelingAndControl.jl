@@ -21,9 +21,9 @@ md"# Exercise 12.b: The effect of filtering input noise with (varying IV lag)
 
 !!! purpose
 	See Exercise `12.a`.
-	
+
 	LS → is baised due to the noise on the input `nᵢ` (filtering the input doesn't have an effect when using LS).
-	
+
 	IV → The bias becomes smaller with increasing the lag, but the std increases with it. **The IV works well if the bandwidth of the generator signal is much smaller than the noise distribution**.
 "
 
@@ -66,7 +66,7 @@ begin
                  prev -> filt(b, a, prev) |>
                  prev -> prev[Nₜᵣₐₙₛ+1:end] |>
 				 prev -> prev / std(prev) * iₘₐₓ
-            
+
 			i = i₀ + nᵢ
             u = u₀ + nᵤ
 

@@ -27,9 +27,9 @@ begin
 	nᵤ = Normal(0, 1)  # voltage disturbance
 	num_of_measurements = [10 100 1000 10_000]
 	num_repeations = 100
-	
+
 	R̂ = zeros((num_repeations, length(num_of_measurements),))u"Ω"
-	
+
 	for n in 1:length(num_of_measurements)
 		for r in 1:num_repeations
 			i = rand(current_distribution, num_of_measurements[n])u"A"
@@ -44,7 +44,7 @@ end
 # ╔═╡ e2b6fffc-388e-4bf8-8cf5-643fbd3ed34f
 begin
 	plot(R̂;
-		layout=4, 
+		layout=4,
 		seriestype=:scatter,
 		ylims=(900, 1100),
 		legend=false,
