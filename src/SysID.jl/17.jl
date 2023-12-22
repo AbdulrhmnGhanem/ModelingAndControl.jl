@@ -16,21 +16,21 @@ end
 using Plots, FFTW, DSP
 
 # ╔═╡ fe2809da-37d0-4cd2-9143-28ec17b4b786
-md"# Exercise 16: Generate a sine wave, noninteger number of periods
+md"# Exercise 17: Generate a sine wave, integer number of periods measured
 
 !!! purpose
-	Leakage errors appears if the number of measured periods (depends on ω) is non interger.
+	No leakage is observed if the we measure integer number of periods.
 "
 
 # ╔═╡ 1afece58-a648-4285-95e8-1d7a68bec830
 begin
-	f = 80
-	ω = 2π * f
 	A = 1
 	ϕ = 0.5π
 	fₛ = 1000
 	Tₛ = 1/fₛ
 	N = 16
+	f = fₛ / N
+	ω = 2π * f
 	interval = 0:N-1
 	
 	u = map(t -> A * sin(ω*t*Tₛ + ϕ), interval)
