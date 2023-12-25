@@ -16,31 +16,30 @@ end
 using Plots, Statistics, FFTW, DSP
 
 # ╔═╡ 26680e4b-b217-44ea-b99d-099a51873feb
-md"# Exercise 28: Repeated realizations of a white random noise excitation with fixed lenght
+md"# Exercise 29: Repeated realizations of a white random noise excitation with increasing length
 
 !!! purpose
-	White noise, is random noise with zero mean and finite variance. Its power specteral density is constant $G_x(f) = A$.
-
-	Although we can see in this exercise that individual realizations is not flat. There are large spikes and dibs. This leads to poor SNR.
+	Show that increasing the record length doesn't result in a smoother spectrum.
 "
 
 # ╔═╡ 9d5eb21e-f8fb-46bb-b572-c89204b474ae
 begin
-    N = 128
+    Ns = [128, 256, 512, 1024]
     fₛ = 1000
-    interval = 1:N/2
-    freqs = interval / N * fₛ
-
     Us = Vector(undef, 4)
 
-    for i in eachindex(Us)
-        u = randn(N) |> u -> u / std(u)
-        U = fft(u) / √N .|> abs .|> amp2db
+    for i in eachindex(Ns)
+        interval = 1:Ns[i]/2
+        freqs = interval / Ns[i] * fₛ
+
+        u = randn(Ns[i]) |> u -> u / std(u)
+        U = fft(u) / √Ns[i] .|> abs .|> amp2db
         Us[i] = scatter(freqs, U;
             xlabel="Frequency (Hz)",
             ylabel="Amplitude (dB)",
             ylims=(-30, 10),
             legend=false,
+            title="Record length $(Ns[i])"
         )
     end
 end
