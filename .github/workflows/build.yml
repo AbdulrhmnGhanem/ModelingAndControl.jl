@@ -30,7 +30,7 @@ jobs:
           path: .cache
           key: ${{ runner.os }}-julia
           restore-keys: |
-            ${{ runner.os }}-julia
+            ${{ runner.os }}-julia-${{ github.event.repository.updated_at }}
 
       - name: Run build.jl
         run: julia --project=. build.jl
