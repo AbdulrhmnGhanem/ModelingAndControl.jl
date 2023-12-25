@@ -16,6 +16,8 @@ end
 using Plots, FFTW, Distributions, DSP, Optimization, OptimizationBBO
 
 # ╔═╡ f5659074-8999-4c7b-abc6-1c6bb91b0bf8
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	function generate_multisine(ϕ, N)
 		F = length(0:0.1N)
@@ -48,14 +50,20 @@ begin
     	maxtime = 1000,
 	)
 end;
+  ╠═╡ =#
 
 # ╔═╡ 481f60c0-3fed-468c-8959-b34accf93fc8
+#=╠═╡
 plot(generate_multisine(sol, N₄₀₀))
+  ╠═╡ =#
 
 # ╔═╡ 538654c2-e0b3-43d3-b7a2-e80cdbbaac06
+#=╠═╡
 crest_factor(generate_multisine(sol, N₄₀₀))
+  ╠═╡ =#
 
 # ╔═╡ 3bb40383-374e-4345-9e70-c78f5166c578
+#=╠═╡
 histogram(generate_multisine(sol, N₄₀₀);
 		xlabel="Amplitude",
 		ylabel="N",
@@ -63,6 +71,7 @@ histogram(generate_multisine(sol, N₄₀₀);
 		bins=N₄₀₀÷16,
 		legend=false,
 	)
+  ╠═╡ =#
 
 # ╔═╡ Cell order:
 # ╠═4fcf1762-a2be-11ee-1fc3-bbf06040eb20
