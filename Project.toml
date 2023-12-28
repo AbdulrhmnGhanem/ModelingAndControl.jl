@@ -28,6 +28,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 [compat]
 DifferentialEquations = "7"
 ModelingToolkit = "8"
+NonlinearSolve = "3"
 Plots = "1"
 Pluto = "0.19"
 PlutoSliderServer = "0.3"
