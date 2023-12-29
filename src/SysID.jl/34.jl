@@ -47,6 +47,15 @@ begin
     Y = fft(y) / √N
 end;
 
+# ╔═╡ 6b38176b-15d3-4a6d-8162-952e74012904
+plot(w, abs.(H);
+    title="FRF",
+    legend=false,
+    xlabel="Normalized Frequency",
+    ylabel="Amplitude",
+    ylims=(0, 1.5),
+)
+
 # ╔═╡ 2df0cc31-f8a2-4627-a4d9-82cddf02ec21
 begin
     p1 = scatter(t, u;
@@ -82,14 +91,6 @@ begin
     )
     plot(p3, p4; layout=(2, 1))
 end
-
-# ╔═╡ 6b38176b-15d3-4a6d-8162-952e74012904
-plot(w, abs.(H);
-    title="FRF",
-    legend=false,
-    xlabel="Normalized Frequency",
-    ylabel="Amplitude",
-)
 
 # ╔═╡ Cell order:
 # ╠═2707e0f5-bccf-4089-8856-b7a6915403eb
