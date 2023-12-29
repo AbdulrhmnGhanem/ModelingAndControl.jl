@@ -28,8 +28,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .cache
-          key: ${{ runner.os }}-julia
-          restore-keys: ${{ github.sha }}
+          key: cache-pluto-${{ github.event.repository.updated_at }}
+          restore-keys: cache-pluto-
 
       - name: Run build.jl
         run: julia --project=. build.jl
