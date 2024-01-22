@@ -23,12 +23,10 @@ function format_chater_title(title::AbstractString)
   t = replace(title, ".html" => "")
   if startswith(title, "ch_")
     t = replace(t, "ch_" => "Chapter ")
+  elseif t in ["freqz"]
+    ...
   else
-    t = try
-      "Exercise " * parse(Int, t)
-    catch
-      t
-    end
+    t = "Exercise " * t
   end
   replace(t, "_" => ".")
 end

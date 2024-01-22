@@ -26,7 +26,6 @@ begin
 	function freqz(filt::Union{FilterCoefficients,Vector}, fₛ::Int, lower::Int, upper::Int, NPeriod::Int)
 	    frequencies = range(lower, upper, length=NPeriod)
 		if filt isa Vector
-			@assert length(filt) == 2
 			filt = PolynomialRatio(filt[1], filt[2])
 		end
 		H = freqresp(filt, frequencies * 2π / fₛ)
@@ -34,7 +33,7 @@ begin
 	end
 	
 	function random_phase_mutli_sine(excited_harm, N, total_size)
-	    u = Vector{Float64}(undef, total_size)
+	    u = Vector{Float64}(undef, total_size)  # Pre-allocate space for u
 	    S = zeros(ComplexF64, N)
 	    
 		for i in 1:total_size÷N
@@ -49,23 +48,17 @@ begin
 end
 
 # ╔═╡ 4c3e735b-2cd4-47dd-a3fc-a823e5ab6176
-md"## Exercise 49: Direct measurement of FRF under feedback conditions
+md"## Exercise 50: Indirect measurement of FRF under feedback conditions
 !!! purpose
-	- The problem with identifying a with system with feedback configuration is that the process noise is feedback to the input of the system. This creates nonzero cross correlation between the input and the output.
+	Everything is like the previous exercise but this time `G` esimated using indirect method:
 
-	- In many casses the exact feedback configuration is not known or the user might be unaware of that the system is operating under feedback conditions.
+	$G(k) = \frac{G_{yr}(k)}{G_{ur}(k)} = \frac{\frac{S_{YR}(k)}{S_{UR}(k)}}{\frac{S_{UR}(k)}{S_{RR}(k)}} = \frac{S_{YR}(k)}{S_{UR}(k)}$
 
-	- If feedback isn't considered it results in systematic error.
+	- The indirect method makes the estimated model of using random random exciation on par with multisine exciation.
 
-	- In this exercise we use direct method which results in an approxiamated system with an expected value of
-	
-	$\mathbb{E}\{\hat G_{direct}(k) \} = \frac{G_{FF}(k)S_{rr}(k) - G^*_{FB}(k)S_{vv}(k)}{S_{rr}(k) + |G_{FB}|^2 S_{vv}(k)}$ 
+	- The estimation error decreases by increasing the amplitude of the reference signal `r` (note the the amplitude of `r` of course is bounded by the stability characteristics of the sytem).
 
-	`Sᵥᵥ`, `Sᵣᵣ` are the power spectrum of the process noise respectively and reference signal respectively.
-
-	- The feedforwad $G_{FF}$ is identified when the `v` dominates over `r`
-	- The inverse of feedback $G^{-1}_{FB}$ is identified when `r` dominates.
-	- Usually a mixture of both is obtained resulting in a baised view of $G_{FF}$.
+	- A disadvantage of thge indirect method is that it cannot capture the nonlinearities of the estimated system if they exist.
 "
 
 # ╔═╡ 05820097-a0b2-4196-9d85-16501b9d9777
@@ -102,20 +95,25 @@ begin
 		
 		deleteat!(y, 1:NTrans)
 		deleteat!(u, 1:NTrans)
+		deleteat!(r, 1:NTrans)
 		
 		u = reshape(u, NPeriod, M)
 		y = reshape(y, NPeriod, M)
+		r = reshape(r, NPeriod, M)
 		
 		Y = fft(y, 1) / (NPeriod / 2)
 		U = fft(u, 1) / (NPeriod / 2)
+		R = fft(r, 1) / (NPeriod / 2)
 		Y = diff(Y; dims=1)
 		U = diff(U; dims=1)
+		R = diff(R; dims=1)
 		YD = Y[Lines, :]
 		UD = U[Lines, :]
+		RD = R[Lines, :]
 		
-		UU = mean(abs2.(UD[:, 1:M]), dims=2)
-		YU = mean(YD[:, 1:M] .* conj.(UD[:, 1:M]), dims=2)
-		GD[:, s] = YU ./ UU
+		YR = mean(YD[:, 1:M] .* conj.(RD[:, 1:M]), dims=2)
+		UR = mean(UD[:, 1:M] .* conj.(RD[:, 1:M]), dims=2)
+		GD[:, s] = YR ./ UR
 	end
 	
 	GMulti = zeros(ComplexF64, NPeriod ÷ 2 -2, length(As))
