@@ -28,15 +28,17 @@ function cheby1(n, r, wp)
 end
 
 # ╔═╡ 7c4713b0-e397-4f06-9abf-77e73480a671
-function random_phase_mutli_sine(lines, period, N)
-	u_all = zeros(period, N ÷ period)
-	for r in 1:N÷period
-		U = zeros(Complex{Float64}, period, 1)
-		U[lines] = exp.(2π * im * rand(length(lines), 1))
-		u = 2real(ifft(U))
-		u_all[:, r] = u / std(u)
-	end
-	vec(reshape(u_all, N, 1))
+function random_phase_mutli_sine(excited_harm, N, total_size)
+    u = Vector{Float64}(undef, total_size)  # Pre-allocate space for u
+    S = zeros(ComplexF64, N)
+    
+	for i in 1:total_size÷N
+        S[excited_harm .+ 1] .= exp.(im .* 2 * π * rand(size(excited_harm)))
+        r = 2 * real(ifft(S))
+        r /= std(r)  # rms value = 1
+        u[(i-1)*N + 1:i*N] .= r
+    end
+    u
 end
 
 # ╔═╡ 3d1a9815-e856-4c2d-a7ab-2ff2d5daadd2
