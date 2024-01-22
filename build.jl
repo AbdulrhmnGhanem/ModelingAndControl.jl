@@ -24,7 +24,7 @@ function format_chater_title(title::AbstractString)
   if startswith(title, "ch_")
     t = replace(t, "ch_" => "Chapter ")
   elseif t in ["freqz"]
-    ...
+    t = t
   else
     t = "Exercise " * t
   end
