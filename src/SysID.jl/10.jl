@@ -27,29 +27,29 @@ md"# Exercise 10: Influence of the number of the parameters on the model uncerta
 
 # ╔═╡ 67aff6ab-1860-46e4-b2d4-61f0aab6b427
 begin
-	a₀ = 1
-	N = 1000
-	nₜ = Normal(0, 1)
-	num_of_repeations = Int(10e5)
+    a₀ = 1
+    N = 1000
+    nₜ = Normal(0, 1)
+    num_of_repeations = Int(10e5)
 
-	t = LinRange(0, 1, N)
-	y₀ = a₀ * t  # the true system
+    t = LinRange(0, 1, N)
+    y₀ = a₀ * t  # the true system
 
-	ŷ₁ = zeros((num_of_repeations, 2))
-	ŷ₂ = zeros(num_of_repeations)
+    ŷ₁ = zeros((num_of_repeations, 2))
+    ŷ₂ = zeros(num_of_repeations)
 
-	Threads.@threads for i in 1:num_of_repeations
-		y = y₀ + rand(nₜ, N)
+    Threads.@threads for i = 1:num_of_repeations
+        y = y₀ + rand(nₜ, N)
 
-		k1 = [t ones(size(t))]
-		k2 = t
+        k1 = [t ones(size(t))]
+        k2 = t
 
-		@inbounds ŷ₁[i, :] = k1 \ y
-		@inbounds ŷ₂[i] = k2 \ y
-	end
+        @inbounds ŷ₁[i, :] = k1 \ y
+        @inbounds ŷ₂[i] = k2 \ y
+    end
 
-	means = round.(mean.([ŷ₁[:, 1], ŷ₂]); digits=4)
-	stds = round.(std.([ŷ₁[:, 1], ŷ₂]); digits=4)
+    means = round.(mean.([ŷ₁[:, 1], ŷ₂]); digits = 4)
+    stds = round.(std.([ŷ₁[:, 1], ŷ₂]); digits = 4)
 end;
 
 # ╔═╡ 6f276e54-df15-465e-a1b4-b86d39b32bb7
@@ -61,11 +61,12 @@ md"
 "
 
 # ╔═╡ 934a56b0-84ba-40fa-8509-d7bb0f4afbae
-stephist([ŷ₁[:,1] ŷ₂];
-	xlabel="Slope",
-	labels=reshape(["Two-Parameter Model (at+b)", "One-Parameter Model (at)"], 1, :),
-	seriestype=:scatter,
-	normalize=:pdf,
+stephist(
+    [ŷ₁[:, 1] ŷ₂];
+    xlabel = "Slope",
+    labels = reshape(["Two-Parameter Model (at+b)", "One-Parameter Model (at)"], 1, :),
+    seriestype = :scatter,
+    normalize = :pdf,
 )
 
 # ╔═╡ Cell order:

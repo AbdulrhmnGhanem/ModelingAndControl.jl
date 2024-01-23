@@ -36,34 +36,37 @@ begin
     for i in eachindex(Ms)
         u = randn(N, Ms[i])  # one column is one realization
         U = fft(u, 1) / √N   # the `fft(u, 1) means apply fft along each columns
-        U = mean(abs.(U[freqs, :]) .^ 2, dims=2) .|> sqrt
+        U = mean(abs.(U[freqs, :]) .^ 2, dims = 2) .|> sqrt
 
-        Us[i] = scatter(f, U .|> amp2db;
-            xlabel="Frequency (Hz)",
-            ylabel="Amplitude (dB)",
-            ylims=(-30, 20),
-            legend=false,
-            title="Number of averages $(Ms[i])"
+        Us[i] = scatter(
+            f,
+            U .|> amp2db;
+            xlabel = "Frequency (Hz)",
+            ylabel = "Amplitude (dB)",
+            ylims = (-30, 20),
+            legend = false,
+            title = "Number of averages $(Ms[i])",
         )
 
-        Us[i+3] = stephist(U;
-            legend=false,
-            bins=:sqrt,
-            xlims=(0, 4),
-            ylims=(0, 200),
-            xlabel="Amplitude (linear)",
+        Us[i+3] = stephist(
+            U;
+            legend = false,
+            bins = :sqrt,
+            xlims = (0, 4),
+            ylims = (0, 200),
+            xlabel = "Amplitude (linear)",
         )
     end
 end
 
 # ╔═╡ 7dcaf04b-ddea-4ea7-80ba-7c72b1ab9c7e
-plot(Us[1], Us[1+3], layout=(2, 1))
+plot(Us[1], Us[1+3], layout = (2, 1))
 
 # ╔═╡ 3552b590-1be3-40b0-b421-71651aabb0bb
-plot(Us[2], Us[1+3], layout=(2, 1))
+plot(Us[2], Us[1+3], layout = (2, 1))
 
 # ╔═╡ 658ed415-9159-413c-b84f-189c51b32d7c
-plot(Us[3], Us[3+3], layout=(2, 1))
+plot(Us[3], Us[3+3], layout = (2, 1))
 
 # ╔═╡ Cell order:
 # ╠═47dcc054-a356-11ee-2f7c-91a157fb9189

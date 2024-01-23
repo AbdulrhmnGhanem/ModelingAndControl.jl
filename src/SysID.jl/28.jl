@@ -36,11 +36,13 @@ begin
     for i in eachindex(Us)
         u = randn(N) |> u -> u / std(u)
         U = fft(u) / √N .|> abs .|> amp2db
-        Us[i] = scatter(freqs, U;
-            xlabel="Frequency (Hz)",
-            ylabel="Amplitude (dB)",
-            ylims=(-30, 10),
-            legend=false,
+        Us[i] = scatter(
+            freqs,
+            U;
+            xlabel = "Frequency (Hz)",
+            ylabel = "Amplitude (dB)",
+            ylims = (-30, 10),
+            legend = false,
         )
     end
 end

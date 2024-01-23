@@ -25,8 +25,14 @@ Similar to [MATLAB's Freqz](https://www.mathworks.com/help/signal/ref/freqz.html
 - upper: upper limit for frequecny band of interest
 - NPeriod: number of data points per block
 """
-function freqz(filt::Union{FilterCoefficients,Vector}, fₛ::Int, lower::Int, upper::Int, NPeriod::Int)
-    frequencies = range(lower, upper, length=NPeriod)
+function freqz(
+    filt::Union{FilterCoefficients,Vector},
+    fₛ::Int,
+    lower::Int,
+    upper::Int,
+    NPeriod::Int,
+)
+    frequencies = range(lower, upper, length = NPeriod)
     if filt isa Vector
         filt = PolynomialRatio(filt[1], filt[2])
     end
@@ -52,9 +58,7 @@ begin
 end;
 
 # ╔═╡ f4a45d38-eefa-420a-acf9-952fd58675a0
-plot(w, amp2db.(abs.(H));
-    ylims=(-60, 1)
-)
+plot(w, amp2db.(abs.(H)); ylims = (-60, 1))
 
 # ╔═╡ Cell order:
 # ╠═2bd75bfc-b880-11ee-1011-0d2b678384d8

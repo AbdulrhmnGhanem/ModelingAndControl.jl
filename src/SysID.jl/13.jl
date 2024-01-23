@@ -25,47 +25,48 @@ md"# Exercise 13: errors-in-variables method
 
 # ╔═╡ 5e7b9196-0a3c-44cb-adf9-58cedc104d68
 begin
-	Nᵣ = 100000
-	N = 5000
-	R₀ = 1000
-	ĩ₀ = Normal(0, 0.01)
-	ñᵢ = Normal(0, 0.001)
-	ñᵤ = Normal(0, 1)
+    Nᵣ = 100000
+    N = 5000
+    R₀ = 1000
+    ĩ₀ = Normal(0, 0.01)
+    ñᵢ = Normal(0, 0.001)
+    ñᵤ = Normal(0, 1)
 
-	i₀ = rand(ĩ₀, N)
-	u₀ = i₀ * R₀
+    i₀ = rand(ĩ₀, N)
+    u₀ = i₀ * R₀
 
-	LS = zeros(Nᵣ)
-	EiV = zeros(Nᵣ)
-	IV = zeros(Nᵣ)
-	lag = 1
+    LS = zeros(Nᵣ)
+    EiV = zeros(Nᵣ)
+    IV = zeros(Nᵣ)
+    lag = 1
 
-	Threads.@threads for r in 1:Nᵣ
-		i = i₀ + rand(ñᵢ, N)
-		u = u₀ + rand(ñᵤ, N)
+    Threads.@threads for r = 1:Nᵣ
+        i = i₀ + rand(ñᵢ, N)
+        u = u₀ + rand(ñᵤ, N)
 
-		LS[r] = i \ u
+        LS[r] = i \ u
 
-		z1 = (u' * u / ñᵤ.:σ^2 - i' * i / ñᵢ.:σ^2)
-    	z2 = u' * i / ñᵤ.:σ^2
-	    EiV[r] = (z1 + sqrt(z1^2 + 4z2^2 / ñᵢ.:σ^2)) / 2z2
+        z1 = (u' * u / ñᵤ.:σ^2 - i' * i / ñᵢ.:σ^2)
+        z2 = u' * i / ñᵤ.:σ^2
+        EiV[r] = (z1 + sqrt(z1^2 + 4z2^2 / ñᵢ.:σ^2)) / 2z2
 
-		iShift = copy(i)
-		deleteat!(iShift, 1:lag)
-		deleteat!(i, N-lag+1:N)
-		deleteat!(u, N-lag+1:N)
+        iShift = copy(i)
+        deleteat!(iShift, 1:lag)
+        deleteat!(i, N-lag+1:N)
+        deleteat!(u, N-lag+1:N)
 
-		IV[r] = (u' * iShift) / (iShift' * i)
+        IV[r] = (u' * iShift) / (iShift' * i)
 
-	end
+    end
 end
 
 # ╔═╡ a395b0c6-c350-472a-a47a-755fb52a77e8
-stephist([LS EiV];
-	normalize=:pdf,
-	xlabel="R (Ω)",
-	ylabel="PDF",
-	labels=reshape(["LS", "EiV"], 1, :),
+stephist(
+    [LS EiV];
+    normalize = :pdf,
+    xlabel = "R (Ω)",
+    ylabel = "PDF",
+    labels = reshape(["LS", "EiV"], 1, :),
 )
 
 # ╔═╡ cd8f3fc7-a493-49d7-b9d2-eabfcf15b982

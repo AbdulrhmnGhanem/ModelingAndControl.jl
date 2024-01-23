@@ -21,36 +21,36 @@ md"# Exercise 6: least squares estimation of models that are linear in the param
 
 # ╔═╡ 92c8f99e-b3ea-430f-9f60-1ca9f0d4a6a6
 begin
-	y(u) = tan(u * 0.9 * pi / 2)
-	u(n) = LinRange(0, 1, n)
-	n = range(1, 20)
-	N = 100
-	u0 = u(N)
-	y0 = y.(u0)
-	KAll = zeros((N, length(n)))  # what is KAll???
-	for k in n
-    	KAll[:,k]=u0.^(k-1);
-	end
-	conds = zeros((length(n), 2))
-	rmss = zeros((length(n), 2))
+    y(u) = tan(u * 0.9 * pi / 2)
+    u(n) = LinRange(0, 1, n)
+    n = range(1, 20)
+    N = 100
+    u0 = u(N)
+    y0 = y.(u0)
+    KAll = zeros((N, length(n)))  # what is KAll???
+    for k in n
+        KAll[:, k] = u0 .^ (k - 1)
+    end
+    conds = zeros((length(n), 2))
+    rmss = zeros((length(n), 2))
 
-	for k in n
-		K = KAll[:, 1:k]
-	  	conds[k,2]=cond(K);
-    	conds[k,1]=cond(K'*K);
+    for k in n
+        K = KAll[:, 1:k]
+        conds[k, 2] = cond(K)
+        conds[k, 1] = cond(K' * K)
 
-		# numerically unstable estimation
-		estimator1 = inv(K'K) * K' * y0
-		p1 = Polynomial(reverse(estimator1))
-		ŷ1 = evalpoly.(u0, p1)
-		rmss[k,1] = sqrt(sum((ŷ1 - y0) .^ 2) / N)
+        # numerically unstable estimation
+        estimator1 = inv(K'K) * K' * y0
+        p1 = Polynomial(reverse(estimator1))
+        ŷ1 = evalpoly.(u0, p1)
+        rmss[k, 1] = sqrt(sum((ŷ1 - y0) .^ 2) / N)
 
-		# numerically stable estimation
-		estimator2 = K \ y0
-		p2 = Polynomial(reverse(estimator2))
-		ŷ2 = evalpoly.(u0, p2)
-		rmss[k,2] = sqrt(sum((y0 - ŷ2) .^ 2)/ N)
-	end
+        # numerically stable estimation
+        estimator2 = K \ y0
+        p2 = Polynomial(reverse(estimator2))
+        ŷ2 = evalpoly.(u0, p2)
+        rmss[k, 2] = sqrt(sum((y0 - ŷ2) .^ 2) / N)
+    end
 end
 
 # ╔═╡ 64168108-a6b2-4930-a659-f7738ac45b6b
@@ -62,22 +62,24 @@ md"
 "
 
 # ╔═╡ 02447fa2-5ad9-47a2-93b4-ed0650385a7c
-plot(conds;
-	yaxis=:log,
-	ylims=(10e0, 10e20),
-	xlabel="Order",
-	labels=reshape(["unstable", "stable"], 1, :) ,
-	ylabel="Condition number",
-	legend=:topleft,
+plot(
+    conds;
+    yaxis = :log,
+    ylims = (10e0, 10e20),
+    xlabel = "Order",
+    labels = reshape(["unstable", "stable"], 1, :),
+    ylabel = "Condition number",
+    legend = :topleft,
 )
 
 # ╔═╡ 7f6f06fa-a857-4554-ba14-6880c52e0b5d
-plot(rmss;
-	yaxis=:log,
-	ylims=(10e-10, 10e10),
-	xlabel="Order",
-	labels=reshape(["unstable", "stable"], 1, :) ,
-	ylabel="RMS error",
+plot(
+    rmss;
+    yaxis = :log,
+    ylims = (10e-10, 10e10),
+    xlabel = "Order",
+    labels = reshape(["unstable", "stable"], 1, :),
+    ylabel = "RMS error",
 )
 
 # ╔═╡ Cell order:

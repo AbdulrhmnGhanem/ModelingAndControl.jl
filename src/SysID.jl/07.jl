@@ -21,28 +21,28 @@ md"# Exercise 7: Characterizing 2-dimensional parameter estimate"
 
 # ╔═╡ bc1962a7-fa1a-4a1d-ad54-6e6c522e1dd3
 begin
-	num_of_measurements = 100
-	num_repeations = Int(10e3)
-	u1₀ = LinRange(-3, 3, num_of_measurements)
-	u2₀ = LinRange(2, 5, num_of_measurements)
+    num_of_measurements = 100
+    num_repeations = Int(10e3)
+    u1₀ = LinRange(-3, 3, num_of_measurements)
+    u2₀ = LinRange(2, 5, num_of_measurements)
 
-	a = 0.1
-	nₜ = Normal(0, 1)
-	y1₀ = a * u1₀
-	y2₀ = a * u2₀
+    a = 0.1
+    nₜ = Normal(0, 1)
+    y1₀ = a * u1₀
+    y2₀ = a * u2₀
 
-	ŷ1 = zeros((num_repeations, 2))
-	ŷ2 = zeros((num_repeations, 2))
+    ŷ1 = zeros((num_repeations, 2))
+    ŷ2 = zeros((num_repeations, 2))
 
-	for i in 1:num_repeations
-		y1 = y1₀ + rand(nₜ, num_of_measurements)
-		y2 = y2₀ + rand(nₜ, num_of_measurements)
+    for i = 1:num_repeations
+        y1 = y1₀ + rand(nₜ, num_of_measurements)
+        y2 = y2₀ + rand(nₜ, num_of_measurements)
 
-		K1 = [u1₀ ones(size(u1₀))]
-		K2 = [u2₀ ones(size(u2₀))]
-		ŷ1[i, :] = K1 \ y1
-		ŷ2[i, :] = K2 \ y2
-	end
+        K1 = [u1₀ ones(size(u1₀))]
+        K2 = [u2₀ ones(size(u2₀))]
+        ŷ1[i, :] = K1 \ y1
+        ŷ2[i, :] = K2 \ y2
+    end
 end
 
 # ╔═╡ 83a443e5-8ab9-401a-8e83-feb9d1d45d96
@@ -53,14 +53,16 @@ md"
 
 # ╔═╡ 38270932-1210-42fd-b2c2-721dbda5cd73
 begin
-	plot([ŷ1[:, 1], ŷ2[:, 1]], [ŷ1[:, 2], ŷ2[:, 2]];
-		seriestype=:scatter,
-		labels=reshape(["u₀ ∈ [-3,3]", "u₀ ∈ [2, 5]"], 1, :),
-		xlabel="Slope",
-		ylabel="Offset",
-		ylims=(-2, 2),
-		xlims=(-0.5, 0.5)
-	)
+    plot(
+        [ŷ1[:, 1], ŷ2[:, 1]],
+        [ŷ1[:, 2], ŷ2[:, 2]];
+        seriestype = :scatter,
+        labels = reshape(["u₀ ∈ [-3,3]", "u₀ ∈ [2, 5]"], 1, :),
+        xlabel = "Slope",
+        ylabel = "Offset",
+        ylims = (-2, 2),
+        xlims = (-0.5, 0.5),
+    )
 end
 
 # ╔═╡ 214f5024-2a01-4bdc-8c0d-e751d09b4fbf

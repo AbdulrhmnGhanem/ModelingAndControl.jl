@@ -6,10 +6,10 @@ using InteractiveUtils
 
 # ╔═╡ 4fcf1762-a2be-11ee-1fc3-bbf06040eb20
 # ╠═╡ show_logs = false
-begin 
- # If you are running this notebook as a stannalone notebook disable this cell.
- import Pkg 
- Pkg.activate(joinpath("..", ".."))
+begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ 4ccfbbb9-8038-4a24-8a46-899ee42f329d
@@ -39,7 +39,7 @@ begin
 	N₄₀₀ = 4096
 	ϕ₀_length₄₀₀ = 410
 	ϕ₀₄₀₀ = zeros(ϕ₀_length₄₀₀)
-	
+
 	f = OptimizationFunction(objective_function)
 	prob = Optimization.OptimizationProblem(f, ϕ₀₄₀₀, N₄₀₀;
 		lb=-π*ones(ϕ₀_length₄₀₀, 1),

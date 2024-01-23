@@ -6,10 +6,10 @@ using InteractiveUtils
 
 # ╔═╡ 89bb7956-a37f-11ee-1ca1-3305b8e087f1
 # ╠═╡ show_logs = false
-begin 
- # If you are running this notebook as a stannalone notebook disable this cell.
- import Pkg 
- Pkg.activate(joinpath("..", ".."))
+begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ 1a2a6937-e9fc-4c3d-a771-dfe6d6d81c38
@@ -29,26 +29,22 @@ end
 
 # ╔═╡ c427462b-621b-4727-a20d-76cf2f8ca5bd
 begin
-	N = 100_000
-	u = sign.(randn(N))
-	h = butter(6, 0.1 * 2)
-	y = filt(h, u)
+    N = 100_000
+    u = sign.(randn(N))
+    h = butter(6, 0.1 * 2)
+    y = filt(h, u)
 end;
 
 # ╔═╡ 02931245-5645-470b-97e6-12d13980e9a6
-histogram(u;
-	legend=false,
-	xlabel="Amplitude",
-	ylabel="Count",
-	title="Binary input",
-)
+histogram(u; legend = false, xlabel = "Amplitude", ylabel = "Count", title = "Binary input")
 
 # ╔═╡ 65609025-db31-4ec4-b8da-feb3dd50fe4e
-histogram(y;
-	legend=false,
-	xlabel="Amplitude",
-	ylabel="Count",
-	title="Filtered binary input",
+histogram(
+    y;
+    legend = false,
+    xlabel = "Amplitude",
+    ylabel = "Count",
+    title = "Filtered binary input",
 )
 
 # ╔═╡ Cell order:

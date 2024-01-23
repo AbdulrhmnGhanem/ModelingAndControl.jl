@@ -38,42 +38,43 @@ md"
 
 # ╔═╡ 2ef4ec2c-d649-44f2-9a40-5664b51f2ebe
 begin
-	R₀ = 1000u"Ω"
-	i₀ = 0.01u"A"
-	ĩ = Uniform(0, ustrip(i₀))
-	Normal_nᵤ = Normal(0, 1)
-	# for the laplace distribution with σ=1 use this ↓ instead
-	# Laplace_nᵤ = Laplace(0, 1/√2)
-	Laplace_nᵤ = Laplace(0, 1)
-	num_of_measurements = 100
-	num_repeations = Int(10e4)
+    R₀ = 1000u"Ω"
+    i₀ = 0.01u"A"
+    ĩ = Uniform(0, ustrip(i₀))
+    Normal_nᵤ = Normal(0, 1)
+    # for the laplace distribution with σ=1 use this ↓ instead
+    # Laplace_nᵤ = Laplace(0, 1/√2)
+    Laplace_nᵤ = Laplace(0, 1)
+    num_of_measurements = 100
+    num_repeations = Int(10e4)
 
-	R̂1 = zeros((num_repeations, 2))u"Ω"
-	R̂2 = zeros((num_repeations, 2))u"Ω"
+    R̂1 = zeros((num_repeations, 2))u"Ω"
+    R̂2 = zeros((num_repeations, 2))u"Ω"
 
-	Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
-	Ω = R₀ * (0.9:0.001:1.1)
+    Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
+    Ω = R₀ * (0.9:0.001:1.1)
 
-	Threads.@threads for r in 1:num_repeations
-		i = rand(ĩ, num_of_measurements)u"A"
+    Threads.@threads for r = 1:num_repeations
+        i = rand(ĩ, num_of_measurements)u"A"
 
-		uₙ = R₀ * i + rand(Normal_nᵤ, num_of_measurements)u"V"
-		R̂1[r, 1] =	ustrip(i) \ ustrip(uₙ)u"Ω"  # LS
-		R̂1[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ, i), Ω)  # LAV
+        uₙ = R₀ * i + rand(Normal_nᵤ, num_of_measurements)u"V"
+        R̂1[r, 1] = ustrip(i) \ ustrip(uₙ)u"Ω"  # LS
+        R̂1[r, 2] = argmin(r -> Vₗₐᵥ(r, uₙ, i), Ω)  # LAV
 
-		uₗ = R₀ * i + rand(Laplace_nᵤ, num_of_measurements)u"V"
-		R̂2[r, 1] =	ustrip(i) \ ustrip(uₗ)u"Ω"  # LS
-		R̂2[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₗ, i), Ω)  # LAV
-	end
+        uₗ = R₀ * i + rand(Laplace_nᵤ, num_of_measurements)u"V"
+        R̂2[r, 1] = ustrip(i) \ ustrip(uₗ)u"Ω"  # LS
+        R̂2[r, 2] = argmin(r -> Vₗₐᵥ(r, uₗ, i), Ω)  # LAV
+    end
 end
 
 # ╔═╡ b5dfea80-4ae9-470a-aa59-6391753227a3
-stephist([R̂1 R̂2];
-	layout=(2, 1),
-	normalize=:pdf,
-	ylims=(0, 0.04),
-	labels=reshape(["LS", "LS", "LAV", "LAV"], 1, :),
-	titles=reshape(["Guassian Noise", "Laplacian Noise"], 1, :),
+stephist(
+    [R̂1 R̂2];
+    layout = (2, 1),
+    normalize = :pdf,
+    ylims = (0, 0.04),
+    labels = reshape(["LS", "LS", "LAV", "LAV"], 1, :),
+    titles = reshape(["Guassian Noise", "Laplacian Noise"], 1, :),
 )
 
 # ╔═╡ Cell order:

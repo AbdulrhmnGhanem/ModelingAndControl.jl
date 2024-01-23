@@ -34,12 +34,14 @@ begin
 
         u = randn(Ns[i]) |> u -> u / std(u)
         U = fft(u) / √Ns[i] .|> abs .|> amp2db
-        Us[i] = scatter(freqs, U;
-            xlabel="Frequency (Hz)",
-            ylabel="Amplitude (dB)",
-            ylims=(-30, 10),
-            legend=false,
-            title="Record length $(Ns[i])"
+        Us[i] = scatter(
+            freqs,
+            U;
+            xlabel = "Frequency (Hz)",
+            ylabel = "Amplitude (dB)",
+            ylims = (-30, 10),
+            legend = false,
+            title = "Record length $(Ns[i])",
         )
     end
 end

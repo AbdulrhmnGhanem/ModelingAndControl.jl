@@ -6,10 +6,10 @@ using InteractiveUtils
 
 # ╔═╡ 62e757e9-5279-42c7-86ce-0dc0a96ff426
 # ╠═╡ show_logs = false
-begin 
- # If you are running this notebook as a stannalone notebook disable this cell.
- import Pkg 
- Pkg.activate(joinpath("..", ".."))
+begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ cd3fdf9d-7285-4b24-96db-22edcf015835
@@ -29,82 +29,83 @@ md"# Exercise 41: FRF measurement using burst excitation
 function cheby1(n, r, wp)
     h = digitalfilter(Lowpass(wp), Chebyshev1(n, r))
     tf = convert(PolynomialRatio, h)
-	coefb(tf), coefa(tf)
+    coefb(tf), coefa(tf)
 end
 
 # ╔═╡ 94c099c2-a626-11ee-3cc4-4504b89da241
 begin
-	N = 256                          
-	N_burst = [64, 128, 192]
-	fₛ= N
+    N = 256
+    N_burst = [64, 128, 192]
+    fₛ = N
 
-	b, a = cheby1(2, 20, 0.2)
-	b *= 10  # increasing the filter gain
-	
-	t = (0:N-1) / fₛ
-	Lines = 1:N÷2
-	f = (Lines .- 1) / N * fₛ
+    b, a = cheby1(2, 20, 0.2)
+    b *= 10  # increasing the filter gain
 
-	G₀, w = freqresp(PolynomialRatio(b, a))
+    t = (0:N-1) / fₛ
+    Lines = 1:N÷2
+    f = (Lines .- 1) / N * fₛ
 
-	ps = []
-	for n in N_burst
-		u = zeros(N, 1)
-		# a white burst signal burst(n, N) has size `N` and the first `n` elements
-		# are white noise.
-		u[1:n] = randn(n,1)
-		U = fft(u) / √N
-		U = U[Lines]
-		
-		y = filt(b, a, u)
-		Y = fft(y) / √N
-		Y = Y[Lines]
+    G₀, w = freqresp(PolynomialRatio(b, a))
 
-		G = Y ./ U
+    ps = []
+    for n in N_burst
+        u = zeros(N, 1)
+        # a white burst signal burst(n, N) has size `N` and the first `n` elements
+        # are white noise.
+        u[1:n] = randn(n, 1)
+        U = fft(u) / √N
+        U = U[Lines]
 
-		time_plot = plot(t, [u, y];
-			ylims=(-5, 5),
-			xlabel="Time (s)",
-			ylabel= n == N_burst[1] ? "Amplitude" : "",
-			legend=false,
-		)
-		push!(ps, time_plot)
-		spec_plot = plot(f, G₀[1:2:end] .|> abs .|> amp2db;
-			xlims=(0, 60),
-			ylims=(-40, 20),
-			xlabel="Frequency (Hz)",
-			ylabel= n == N_burst[1] ? "Amplitude (dB)" : "",
-			legend=false,
-			
-		)
-		spec_plot = scatter!((G₀[1:2:end-1] - G) .|> abs .|> amp2db)
-		push!(ps, spec_plot)
-	end
-	
+        y = filt(b, a, u)
+        Y = fft(y) / √N
+        Y = Y[Lines]
+
+        G = Y ./ U
+
+        time_plot = plot(
+            t,
+            [u, y];
+            ylims = (-5, 5),
+            xlabel = "Time (s)",
+            ylabel = n == N_burst[1] ? "Amplitude" : "",
+            legend = false,
+        )
+        push!(ps, time_plot)
+        spec_plot = plot(
+            f,
+            G₀[1:2:end] .|> abs .|> amp2db;
+            xlims = (0, 60),
+            ylims = (-40, 20),
+            xlabel = "Frequency (Hz)",
+            ylabel = n == N_burst[1] ? "Amplitude (dB)" : "",
+            legend = false,
+        )
+        spec_plot = scatter!((G₀[1:2:end-1] - G) .|> abs .|> amp2db)
+        push!(ps, spec_plot)
+    end
+
 end
 
 # ╔═╡ 8ea13547-6b1a-4223-865c-8cf0e0d8764c
 begin
-	legend = scatter((1:2)';
-			ylims=(0, 0.00001),
-			framestyle=:none,
-			label=reshape(["u(t)", "y(t)"], 1, :),
-			) 
-	plot(ps[1:2:end]..., legend;
-		layout=(2, 3),
-	)
+    legend = scatter(
+        (1:2)';
+        ylims = (0, 0.00001),
+        framestyle = :none,
+        label = reshape(["u(t)", "y(t)"], 1, :),
+    )
+    plot(ps[1:2:end]..., legend; layout = (2, 3))
 end
 
 # ╔═╡ a20d9367-dbee-4586-854b-edfb1dbcc1fd
 begin
-	legend2 = scatter((1:2)';
-				ylims=(0, 0.00001),
-				framestyle=:none,
-				label=reshape(["G₀", "G₀ - G"], 1, :),
-				) 
-	plot(ps[2:2:end]..., legend2;
-			layout=(2, 3),
-		)
+    legend2 = scatter(
+        (1:2)';
+        ylims = (0, 0.00001),
+        framestyle = :none,
+        label = reshape(["G₀", "G₀ - G"], 1, :),
+    )
+    plot(ps[2:2:end]..., legend2; layout = (2, 3))
 end
 
 # ╔═╡ Cell order:

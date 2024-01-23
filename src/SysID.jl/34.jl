@@ -48,48 +48,58 @@ begin
 end;
 
 # ╔═╡ 6b38176b-15d3-4a6d-8162-952e74012904
-plot(w, abs.(H);
-    title="FRF",
-    legend=false,
-    xlabel="Normalized Frequency",
-    ylabel="Amplitude",
-    ylims=(0, 1.5),
+plot(
+    w,
+    abs.(H);
+    title = "FRF",
+    legend = false,
+    xlabel = "Normalized Frequency",
+    ylabel = "Amplitude",
+    ylims = (0, 1.5),
 )
 
 # ╔═╡ 2df0cc31-f8a2-4627-a4d9-82cddf02ec21
 begin
-    p1 = scatter(t, u;
-        line=:stem,
-        marker=:circle,
-        title="Time domain",
-        ylabel="Amplitude",
-        legend=false,
-        ylims=(0, 1.5),
+    p1 = scatter(
+        t,
+        u;
+        line = :stem,
+        marker = :circle,
+        title = "Time domain",
+        ylabel = "Amplitude",
+        legend = false,
+        ylims = (0, 1.5),
     )
-    p2 = plot(t, y;
-        xlabel="Time (s)",
-        ylabel="Amplitude",
-        legend=false,
-        ylims=(-0.2, 0.2),
+    p2 = plot(
+        t,
+        y;
+        xlabel = "Time (s)",
+        ylabel = "Amplitude",
+        legend = false,
+        ylims = (-0.2, 0.2),
     )
-    plot(p1, p2; layout=(2, 1))
+    plot(p1, p2; layout = (2, 1))
 end
 
 # ╔═╡ c3acd5df-7e84-4b35-a3f3-48f8f84c937b
 begin
-    p3 = plot(freqs[freqs_lines], abs.(U[freqs_lines]);
-        title="Frequency domain",
-        ylabel="Amplitude",
-        legend=false,
-        ylims=(0, 0.12),
+    p3 = plot(
+        freqs[freqs_lines],
+        abs.(U[freqs_lines]);
+        title = "Frequency domain",
+        ylabel = "Amplitude",
+        legend = false,
+        ylims = (0, 0.12),
     )
-    p4 = plot(freqs[freqs_lines], abs.(Y[freqs_lines] / U[1]); # why are we dividing by U[1]?
-        xlabel="Frequency (Hz)",
-        ylabel="Amplitude",
-        legend=false,
-        ylims=(0, 1.5),
+    p4 = plot(
+        freqs[freqs_lines],
+        abs.(Y[freqs_lines] / U[1]); # why are we dividing by U[1]?
+        xlabel = "Frequency (Hz)",
+        ylabel = "Amplitude",
+        legend = false,
+        ylims = (0, 1.5),
     )
-    plot(p3, p4; layout=(2, 1))
+    plot(p3, p4; layout = (2, 1))
 end
 
 # ╔═╡ Cell order:

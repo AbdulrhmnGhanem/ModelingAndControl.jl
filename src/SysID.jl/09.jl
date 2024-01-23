@@ -29,47 +29,48 @@ md"# Exercise 9: Identification in the presence of outiliers
 
 # ╔═╡ 1e55a00d-2f3d-494c-9613-1196b744c719
 begin
-	R₀ = 1000u"Ω"
-	i₀ = 0.01u"A"
-	ĩ = Uniform(0, ustrip(i₀))
-	Χ² = Chisq(1)  # voltage noise distribution
-	num_of_measurements = 100
-	num_repeations = Int(10e4)
+    R₀ = 1000u"Ω"
+    i₀ = 0.01u"A"
+    ĩ = Uniform(0, ustrip(i₀))
+    Χ² = Chisq(1)  # voltage noise distribution
+    num_of_measurements = 100
+    num_repeations = Int(10e4)
 
 
-	χ² = rand(Χ², num_repeations*100)
-	Χ²_μ, Χ̃²= mean(χ²)u"V", median(χ²)u"V"
+    χ² = rand(Χ², num_repeations * 100)
+    Χ²_μ, Χ̃² = mean(χ²)u"V", median(χ²)u"V"
 
-	Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
-	Ω = R₀ * (0.8:0.001:1.1)
+    Vₗₐᵥ(R, u, i) = sum(abs.(u - R * i)) / num_of_measurements
+    Ω = R₀ * (0.8:0.001:1.1)
 
 
-	R̂1 = zeros((num_repeations, 2))u"Ω"
-	R̂2 = zeros((num_repeations, 2))u"Ω"
+    R̂1 = zeros((num_repeations, 2))u"Ω"
+    R̂2 = zeros((num_repeations, 2))u"Ω"
 
-	Threads.@threads for r in 1:num_repeations
-		i = rand(ĩ, num_of_measurements)u"A"
+    Threads.@threads for r = 1:num_repeations
+        i = rand(ĩ, num_of_measurements)u"A"
 
-		uₙ = R₀ * i + rand(Χ², num_of_measurements)u"V"
-		uₙ_calibrated_with_mean = uₙ .- Χ²_μ
-		uₙ_calibrated_with_median = uₙ .- Χ̃²
+        uₙ = R₀ * i + rand(Χ², num_of_measurements)u"V"
+        uₙ_calibrated_with_mean = uₙ .- Χ²_μ
+        uₙ_calibrated_with_median = uₙ .- Χ̃²
 
-		R̂1[r, 1] =	ustrip(i) \ ustrip(uₙ_calibrated_with_mean)u"Ω"  # LS
-		R̂1[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_mean, i), Ω)  # LAV
+        R̂1[r, 1] = ustrip(i) \ ustrip(uₙ_calibrated_with_mean)u"Ω"  # LS
+        R̂1[r, 2] = argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_mean, i), Ω)  # LAV
 
-		R̂2[r, 1] =	ustrip(i) \ ustrip(uₙ_calibrated_with_median)u"Ω"  # LS
-		R̂2[r, 2] =	argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_median, i), Ω)  # LAV
-	end
+        R̂2[r, 1] = ustrip(i) \ ustrip(uₙ_calibrated_with_median)u"Ω"  # LS
+        R̂2[r, 2] = argmin(r -> Vₗₐᵥ(r, uₙ_calibrated_with_median, i), Ω)  # LAV
+    end
 end
 
 # ╔═╡ 72683c53-ee97-4b4a-a65d-dfcd6b140459
-stephist([R̂1 R̂2];
-	layout=(2, 1),
-	normalize=:pdf,
-	ylims=(0, 0.04),
-	xlims=(800, 1200),
-	labels=reshape(["LS", "LS", "LAV", "LAV"], 1, :),
-	titles=reshape(["Calibration with mean", "Calibration with median"], 1, :),
+stephist(
+    [R̂1 R̂2];
+    layout = (2, 1),
+    normalize = :pdf,
+    ylims = (0, 0.04),
+    xlims = (800, 1200),
+    labels = reshape(["LS", "LS", "LAV", "LAV"], 1, :),
+    titles = reshape(["Calibration with mean", "Calibration with median"], 1, :),
 )
 
 # ╔═╡ Cell order:

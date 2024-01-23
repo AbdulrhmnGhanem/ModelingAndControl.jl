@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes",
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -16,10 +23,10 @@ end
 
 # ╔═╡ 4658abb8-a51c-11ee-094d-830c5934815a
 # ╠═╡ show_logs = false
-begin 
- # If you are running this notebook as a stannalone notebook disable this cell.
- import Pkg 
- Pkg.activate(joinpath("..", ".."))
+begin
+    # If you are running this notebook as a stannalone notebook disable this cell.
+    import Pkg
+    Pkg.activate(joinpath("..", ".."))
 end
 
 # ╔═╡ f4535fab-50f6-4a5b-babe-43cfdc14158a
@@ -45,7 +52,7 @@ end
 
 # ╔═╡ a570dbcf-0d97-426d-a45d-b66c0918ff72
 begin
-	N = 128 * record_length_multiplier
+    N = 128 * record_length_multiplier
     fₛ = 256
     t = (0:N-1) / fₛ
     freqs = (0:N-1) / N * fₛ
@@ -53,40 +60,44 @@ begin
     f_cuttoff = 0.1fₛ
     order = 2
     reseonance = 10
-	f = 16
-	ω = 2π * f
-	periods = N ÷ f
-    
-	h = cheby1(order, reseonance, 2f_cuttoff / fₛ)
-	# everything so far is exactly like the previous exercise.
-	# Now, we excite the system with a cosine instead of impulse signal.
-	u = cos.(ω .* t)
-	y = filt(h, u)
+    f = 16
+    ω = 2π * f
+    periods = N ÷ f
 
-	# we consider that all transient effects have vanished in the final period.
-	yₛₛ = repeat(y[end-f+1:end], periods)
+    h = cheby1(order, reseonance, 2f_cuttoff / fₛ)
+    # everything so far is exactly like the previous exercise.
+    # Now, we excite the system with a cosine instead of impulse signal.
+    u = cos.(ω .* t)
+    y = filt(h, u)
 
-	# the spectrum
-	U = fft(u) / N .|> abs .|> amp2db
-	Y = fft(y) / N .|> abs .|> amp2db
-	Yₛₛ = fft(yₛₛ) / N .|> abs .|> amp2db
+    # we consider that all transient effects have vanished in the final period.
+    yₛₛ = repeat(y[end-f+1:end], periods)
+
+    # the spectrum
+    U = fft(u) / N .|> abs .|> amp2db
+    Y = fft(y) / N .|> abs .|> amp2db
+    Yₛₛ = fft(yₛₛ) / N .|> abs .|> amp2db
 end;
 
 # ╔═╡ 06db396f-bc53-4211-9a80-750f60d7d71b
-plot(t, [y yₛₛ];
-	xlabel="Time (s)",
-	ylabel="Amplitude",
-	labels=reshape(["y", "yₛₛ"], 1, :),
-	xlims=(0, 0.25),
+plot(
+    t,
+    [y yₛₛ];
+    xlabel = "Time (s)",
+    ylabel = "Amplitude",
+    labels = reshape(["y", "yₛₛ"], 1, :),
+    xlims = (0, 0.25),
 )
 
 # ╔═╡ a0f57a25-381e-42f9-b0cc-8863e54029fe
-scatter(freqs[freqs_lines], [U[freqs_lines], Y[freqs_lines], Yₛₛ[freqs_lines]];
-	xlabel="Frequency (Hz)",
-	ylabel="Amplitude (dB)",
-	ylims=(-60, 0),
-	legend=:topright,
-	labels=reshape(["u", "y", "yₛₛ",], 1, :),
+scatter(
+    freqs[freqs_lines],
+    [U[freqs_lines], Y[freqs_lines], Yₛₛ[freqs_lines]];
+    xlabel = "Frequency (Hz)",
+    ylabel = "Amplitude (dB)",
+    ylims = (-60, 0),
+    legend = :topright,
+    labels = reshape(["u", "y", "yₛₛ"], 1, :),
 )
 
 # ╔═╡ Cell order:

@@ -34,34 +34,34 @@ begin
     fₛ = 1000
     freqss = 1:N÷2
     f = (freqss .- 1) / N * fₛ
-	h = butter(6, 0.1*2)
+    h = butter(6, 0.1 * 2)
 
     Us = Vector(undef, 3)
 
     for i in eachindex(Ms)
         u = randn(N, Ms[i])  # one column is one realization
-		u = filt(h, u)
-		# the `fft(u, 1) means apply fft along each columns
+        u = filt(h, u)
+        # the `fft(u, 1) means apply fft along each columns
         U_react = fft(u, 1) / √N
-        U_react = mean(abs.(U_react[freqss, :]) .^ 2, dims=2) .|> sqrt
+        U_react = mean(abs.(U_react[freqss, :]) .^ 2, dims = 2) .|> sqrt
 
-		scale = mean(hanning(N) .^ 2) .|> sqrt
-		U_hann = fft(hanning(N) .* u, 1) / √N
-		U_hann =  (mean(abs.(U_hann[freqss, :]) .^ 2, dims=2) .|> sqrt) / scale
+        scale = mean(hanning(N) .^ 2) .|> sqrt
+        U_hann = fft(hanning(N) .* u, 1) / √N
+        U_hann = (mean(abs.(U_hann[freqss, :]) .^ 2, dims = 2) .|> sqrt) / scale
 
-        scatter(f, U_react .|> amp2db;
-            xlabel="Frequency (Hz)",
-            ylabel="Amplitude (dB)",
-            ylims=(-80, 20),
+        scatter(
+            f,
+            U_react .|> amp2db;
+            xlabel = "Frequency (Hz)",
+            ylabel = "Amplitude (dB)",
+            ylims = (-80, 20),
             # legend=false,
-			label="Rectangular",
-            title="Number of averages $(Ms[i])",
-			legendtitle="window",
+            label = "Rectangular",
+            title = "Number of averages $(Ms[i])",
+            legendtitle = "window",
         )
 
-       Us[i] = scatter!(f, U_hann .|> amp2db;
-		 	label="Hanning",
-        )
+        Us[i] = scatter!(f, U_hann .|> amp2db; label = "Hanning")
     end
 end
 

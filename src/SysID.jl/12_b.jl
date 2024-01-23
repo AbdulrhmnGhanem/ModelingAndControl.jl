@@ -45,10 +45,11 @@ begin
     Nₜᵣₐₙₛ = 1000
 
     b_gen, a_gen = butter(1, 2f_gen)
-    i₀ = randn(N + Nₜᵣₐₙₛ, 1) |>
-         prev -> filt(b_gen, a_gen, prev) |>
-         prev -> prev[Nₜᵣₐₙₛ+1:end] |>
-		 prev -> prev * iₘₐₓ / std(prev)
+    i₀ =
+        randn(N + Nₜᵣₐₙₛ, 1) |>
+        prev ->
+            filt(b_gen, a_gen, prev) |>
+            prev -> prev[Nₜᵣₐₙₛ+1:end] |> prev -> prev * iₘₐₓ / std(prev)
 
     u₀ = R₀ * i₀
 
@@ -57,17 +58,18 @@ begin
     LS = zeros(Nᵣ, length(lags))
     IV = zeros(Nᵣ, length(lags))
 
-    for r in 1:length(lags)
+    for r = 1:length(lags)
         b, a = butter(2, 2fₙ)
 
-        for s in 1:Nᵣ
+        for s = 1:Nᵣ
             nᵤ = randn(N)
-            nᵢ = randn(N + Nₜᵣₐₙₛ) |>
-                 prev -> filt(b, a, prev) |>
-                 prev -> prev[Nₜᵣₐₙₛ+1:end] |>
-				 prev -> prev / std(prev) * iₘₐₓ
+            nᵢ =
+                randn(N + Nₜᵣₐₙₛ) |>
+                prev ->
+                    filt(b, a, prev) |>
+                    prev -> prev[Nₜᵣₐₙₛ+1:end] |> prev -> prev / std(prev) * iₘₐₓ
 
-			i = i₀ + nᵢ
+            i = i₀ + nᵢ
             u = u₀ + nᵤ
 
             LS[s, r] = i \ u
@@ -83,20 +85,25 @@ begin
 end
 
 # ╔═╡ 61939ecb-79a9-4471-96be-7354c31a30d5
-stephist([LS IV];
-	normalize=:pdf,
-	xlims=(0, 1550),
-	ylims=(0, 0.101),
-	xlabel="R (Ω)",
-	ylabel="PDF",
-	labels=reshape([
-		"LS (s = $(lags[1]))",
-		"LS (s = $(lags[2]))",
-		"LS (s = $(lags[3]))",
-		"IV (s = $(lags[1]))",
-		"IV (s = $(lags[2]))",
-		"IV (s = $(lags[3]))",
-	], 1, :),
+stephist(
+    [LS IV];
+    normalize = :pdf,
+    xlims = (0, 1550),
+    ylims = (0, 0.101),
+    xlabel = "R (Ω)",
+    ylabel = "PDF",
+    labels = reshape(
+        [
+            "LS (s = $(lags[1]))",
+            "LS (s = $(lags[2]))",
+            "LS (s = $(lags[3]))",
+            "IV (s = $(lags[1]))",
+            "IV (s = $(lags[2]))",
+            "IV (s = $(lags[3]))",
+        ],
+        1,
+        :,
+    ),
 )
 
 # ╔═╡ Cell order:
