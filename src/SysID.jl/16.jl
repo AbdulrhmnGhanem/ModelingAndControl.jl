@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -31,6 +31,8 @@ begin
     fₛ = 1000
     Tₛ = 1 / fₛ
     N = 16
+	# from zero to N-1 because the Nth point belongs to the next period
+	# it's an open interval [0, NTₛ[
     interval = 0:N-1
 
     u = map(t -> A * sin(ω * t * Tₛ + ϕ), interval)

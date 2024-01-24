@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -7,14 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(
-                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                "AbstractPlutoDingetjes",
-            )].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -39,7 +32,7 @@ md"# Exercise 37: FRF measurement using a noise excitation and rectangular windo
 	- The errors in the FRF are completely due to leakage.
 	- The initial error drops fast with growing `M` (number of average realizations).
 	- For larger `M` values the error becomse proportional to $\frac{1}{\sqrt M}$.
-	- FFT slightly imporoves the FRF when `M` is small.
+	- Normalizing the FFT output slightly improves the FRF when `M` is small.
 "
 
 # ╔═╡ d155c6e6-7a88-4b6b-9762-a148a1e6415c
@@ -134,7 +127,7 @@ begin
 end
 
 # ╔═╡ da756326-8389-4747-b4de-4747e0f6b4d1
-md"## Input powwer spectrum averaged over `M` realizations"
+md"## Input power spectrum averaged over `M` realizations"
 
 # ╔═╡ cfcea01e-c5f3-4f96-9beb-b3f88156c938
 begin

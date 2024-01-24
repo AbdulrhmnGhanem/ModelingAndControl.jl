@@ -59,7 +59,7 @@ md"## Exercise 49: Direct measurement of FRF under feedback conditions
 !!! purpose
 	- The problem with identifying a with system with feedback configuration is that the process noise is feedback to the input of the system. This creates nonzero cross correlation between the input and the output.
 
-	- In many casses the exact feedback configuration is not known or the user might be unaware of that the system is operating under feedback conditions.
+	- In many cases the exact feedback configuration is not known or the user might be unaware of that the system is operating under feedback conditions.
 
 	- If feedback isn't considered it results in systematic error.
 
@@ -67,10 +67,10 @@ md"## Exercise 49: Direct measurement of FRF under feedback conditions
 	
 	$\mathbb{E}\{\hat G_{direct}(k) \} = \frac{G_{FF}(k)S_{rr}(k) - G^*_{FB}(k)S_{vv}(k)}{S_{rr}(k) + |G_{FB}|^2 S_{vv}(k)}$ 
 
-	`Sᵥᵥ`, `Sᵣᵣ` are the power spectrum of the process noise respectively and reference signal respectively.
+	`Sᵥᵥ`, `Sᵣᵣ` are the power spectrum of the process noise and reference signal respectively.
 
-	- The feedforwad $G_{FF}$ is identified when the `v` dominates over `r`
-	- The inverse of feedback $G^{-1}_{FB}$ is identified when `r` dominates.
+	- The feedforwad $G_{FF}$ is identified when the `r` dominates over `v`
+	- The inverse of feedback $G^{-1}_{FB}$ is identified when `v` dominates.
 	- Usually a mixture of both is obtained resulting in a baised view of $G_{FF}$.
 "
 

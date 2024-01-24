@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -16,10 +16,10 @@ end
 using Plots, FFTW, DSP, StatsBase, Distributions
 
 # ╔═╡ fe2809da-37d0-4cd2-9143-28ec17b4b786
-md"# Exercise 20: Generation of a multisine with flat amplitude spectrum
+md"# Exercise 22: Generation of a multisine with flat amplitude spectrum
 
 !!! purpose
-	Same as Exercise 16: shoow the leakge effect of measuring non integer number of periods (but this one for multi sine signal).
+	Same as Exercise 16: show the leakge effect of measuring non integer number of periods (but this one for multi sine signal).
 "
 
 # ╔═╡ 1afece58-a648-4285-95e8-1d7a68bec830
@@ -82,7 +82,7 @@ end
 # ╔═╡ Cell order:
 # ╠═3b4420fe-a053-11ee-1fdf-a9dd111cdac1
 # ╠═146a58f9-2848-414b-a87c-9eb15d1e3a08
-# ╟─fe2809da-37d0-4cd2-9143-28ec17b4b786
+# ╠═fe2809da-37d0-4cd2-9143-28ec17b4b786
 # ╠═1afece58-a648-4285-95e8-1d7a68bec830
 # ╟─691361e0-038b-41fc-9e75-2f496fab758f
 # ╟─1c238747-6435-415f-b6b3-903825aef7f0

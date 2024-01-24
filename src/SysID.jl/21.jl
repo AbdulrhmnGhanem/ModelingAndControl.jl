@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -37,7 +37,7 @@ end;
 
 # ╔═╡ d930593f-b3a7-4825-ae4e-f20f53ec9d52
 plot(
-    t,
+    [t, fₛ * 0:N-1 / N],
     [u, U];
     xlabel = reshape(["Time (s)", "Frequency (Hz)"], 1, :),
     ylabel = reshape(["Amplitude", "Amplitude (dB)"], 1, :),
@@ -57,5 +57,5 @@ cr(u) = $(maximum(u) / rms(u))
 # ╠═08b06706-8ca8-4ef3-852d-9146228351a7
 # ╟─c66e7fca-0a21-4c24-81e0-466c73c40f50
 # ╠═13fea8c0-e2a1-4525-9ab9-71573ccb98ce
-# ╟─d930593f-b3a7-4825-ae4e-f20f53ec9d52
+# ╠═d930593f-b3a7-4825-ae4e-f20f53ec9d52
 # ╟─3c823b94-12aa-4d2b-8a0a-7ddc3a9ff8d3

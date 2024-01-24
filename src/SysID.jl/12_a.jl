@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -25,7 +25,7 @@ md"# Exercise 12.a: The effect of filtering input noise with (varying cutoff fre
 	* On removing current noise `nᵢ` the bais disappears for all configurations.
 	* Removing the voltage noise doesn't affect the bias in these configurations.
 
-	LS → is baised due to the noise on the input `nᵢ` (filtering the input doesn't have an effect when using LS).
+	LS → is baised due to the noise on the input `nᵢ` and the relative bias is proportional to $\sigma^2_{n_i} / \sigma^2{i_0}$ (filtering the input doesn't have an effect when using LS).
 
 	IV → is more complicated. For the white noise situation, no bias is visible. However, once the output noise is filtered, a bias becomes visible. The relative bias is proportional to the ratio of the autocorrelation functions of the noise and the current `Rₙᵢₙᵢ(s)/Rᵢ₀ᵢ₀(s)` 👇️
 
