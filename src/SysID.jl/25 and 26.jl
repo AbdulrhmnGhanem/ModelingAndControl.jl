@@ -29,7 +29,7 @@ md"## Exercise 25 and 26: Generation of maximum length binary sequence
 Feedback configuration for generatinbg maximum length binary sequence
 Keith Godfrey
 
-Refernce: K. Godfrey, Perturbation Signals for System Identification. Prentice Hall, 1993.
+Reference: K. Godfrey, Perturbation Signals for System Identification. Prentice Hall, 1993.
 """
 function mlbs_fedback(n)
     forks = if n == 1
