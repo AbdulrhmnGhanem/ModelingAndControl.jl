@@ -37,7 +37,7 @@ end;
 
 # ╔═╡ d930593f-b3a7-4825-ae4e-f20f53ec9d52
 plot(
-    [t, fₛ * 0:N-1 / N],
+    [t, fₛ*0:N-1/N],
     [u, U];
     xlabel = reshape(["Time (s)", "Frequency (Hz)"], 1, :),
     ylabel = reshape(["Amplitude", "Amplitude (dB)"], 1, :),

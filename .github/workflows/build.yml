@@ -39,6 +39,11 @@ jobs:
       - name: Run build.jl
         run: julia --project=. build.jl
 
+      - name: normalize hrefs
+        run: |
+          sed -i 's/SysID\.jl\///g' .build/SysID.jl/index.html
+          sed -i 's/PracticalModelingAndSimulation\.jl\///g' .build/PracticalModelingAndSimulation.jl/index.html
+
       - name: Publish
         uses: cpina/github-action-push-to-another-repository@main
         env:
