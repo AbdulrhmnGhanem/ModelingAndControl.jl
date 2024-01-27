@@ -26,8 +26,7 @@ md"## Exercise 25 and 26: Generation of maximum length binary sequence
 
 # ╔═╡ 4399fb37-636a-4a01-b4af-69fc07769c1c
 """
-Feedback configuration for generatinbg maximum length binary sequence
-Keith Godfrey
+Feedback configuration for generatinbg maximum length binary sequence.
 
 Reference: K. Godfrey, Perturbation Signals for System Identification. Prentice Hall, 1993.
 """
