@@ -13,6 +13,7 @@ end
 books = [
     Book("Practical MATLAB Modeling With Simulink", "PracticalModelingAndSimulation.jl"),
     Book("Mastering System Identification in 100 Exercises", "SysID.jl"),
+    Book("Data-Driven Science and Engineering", "databook.jl"),
 ]
 
 function chapters(book::Book)
