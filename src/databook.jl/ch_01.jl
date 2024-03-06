@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.37
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ d7a6d9ba-066d-4214-aabc-13c9124389ab
-using FileIO, LinearAlgebra, Images, ImageShow, ImageCore, Plots, MAT, StatsBase
+using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots
 
 # ╔═╡ 1c78d592-8b55-4171-b116-9afb4e7f9d25
 md"# Chapter 1 - SVD"
@@ -22,7 +22,7 @@ md"# Chapter 1 - SVD"
 # ╔═╡ 59db64bf-fb86-4183-b217-17d23abe8944
 md"## Exercise 1.1
 Load the image dog.jpg and compute the full SVD. Choose a rank r < m and
-confirm that the matrix **U'∗U** is the _r × r_ identity matrix. Now confirm that **UU'∗** is not the identity matrix. Compute the norm of the error between **UU∗** and the n × n identity matrix as the rank r varies from 1 to n and plot the error."
+confirm that the matrix **U'U** is the _r × r_ identity matrix. Now confirm that **UU'** is not the identity matrix. Compute the norm of the error between **UU'** and the n × n identity matrix as the rank r varies from 1 to n and plot the error."
 
 # ╔═╡ 40eb744e-4150-442b-b8cf-9ee4bdc38542
 begin
@@ -124,7 +124,9 @@ begin
     average_face = mean(training_faces; dims=2)
     a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
     faces_X = training_faces - a
+	# builtin svd
     faces_U, faces_S, faces_Vt = svd(faces_X; full=false)
+	# snapshots method
 	Λ, v =  eigen(faces_X' * faces_X)
 	Σ = sqrt(Diagonal(sort(abs.(Λ); rev=true)))
 	snapshot_U = faces_X * v * inv(Σ)
@@ -176,7 +178,7 @@ md"#### normal"
 
 # ╔═╡ 823f0389-26a2-4c5f-ae31-8b76ff2655c1
 md"
-!!! comparison
+!!! remark
 	The further we go into the specturm the clearer the singular vectors looks (the details of the face are more clear), whichi is the opposite to the normal svd apporach.
 "
 
@@ -186,9 +188,78 @@ Generate a random 100×100 matrix, i.e., a matrix whose entries are sampled from
 Repeat this 100 times and plot the distribution of singular values in a box-and-whisker plot. Plot the mean and median singular values as a function of r. Now repeat this for different matrix sizes (e.g., 50 × 50, 200 × 200, 500 × 500, 1000 × 1000, etc.)
 "
 
+# ╔═╡ 9e92eedc-17d1-477d-b767-818abb59d247
+begin
+	function solve_four(s)
+		singular_values = Array{Float64, 2}(undef, (s, s))
+		for i in 1:s
+			X = randn(s, s)
+			U, S, V = svd(X)
+			singular_values[i, :] = S 
+		end
+		averaged = mean(singular_values, dims=1)
+		μ = mean.(averaged)
+		med = median.(averaged)
+		singular_values', μ', med'
+	end
+	
+	function plot_four(sol)
+		p1 = boxplot(sol[1];
+			legend=false,
+			title="Box-whisker plot",
+		)
+		p2 = plot(sol[1];
+			legend=false,
+			title="Singular values",
+		)
+		p3 = plot([sol[2], sol[3]];
+			labels=reshape(["mean", "median"], 1, :),
+			ls=reshape([:dot, :dash], 1, :),
+			titlle=""
+		)
+		plot(p1, p2, p3;
+			layout=(3, 1),
+			size=(600, 600),
+		)
+	end
+end
+
+# ╔═╡ a8717234-cf67-4a12-8e29-c252ea6f05cd
+md"### Matrix 50x50"
+
+# ╔═╡ e55c3f39-cdf4-476c-b359-c4ade88aa2c1
+plot_four(solve_four(50))
+
+# ╔═╡ a81a9346-3cd9-458f-987b-e3ac01c7faba
+md"### Matrix 100x100"
+
+# ╔═╡ beba89ea-4886-4bd1-bd8d-b0b957232bdd
+plot_four(solve_four(100))
+
+# ╔═╡ c4329ed7-cb3e-4568-aaae-3f78d94534ee
+md"### Matrix 200x200"
+
+# ╔═╡ 9c2c124f-366c-42a4-a1cc-740aa14f7672
+plot_four(solve_four(200))
+
+# ╔═╡ 1bf98e6c-51fa-44c2-b9bb-c14b0bd393e7
+md"### Matrix 500x500"
+
+# ╔═╡ 7f34f4f4-1311-47c1-a343-dcfb36eb74b4
+plot_four(solve_four(500))
+
+# ╔═╡ d3ce0903-84a0-4b1f-bdb2-ee95bbac3f06
+md"
+!!! remark
+	The size of the matrix doesn't change the statstical profile, but it increases its magnitude.  
+"
+
 # ╔═╡ efbad08c-40e4-4b47-9433-419a33a76047
 md"## Exercise 1.5
 Compare the singular value distributions for a 1000 × 1000 uniformly distributed random matrix and a Gaussian random matrix of the same size. Adapt the Gavish–Donoho algorithm to filter uniform noise based on this singular value distribution. Add uniform noise to a data set (either an image or the test low-rank signal) and apply this thresholding algorithm to filter the noise. Vary the magnitude of the noise and compare the results. Is the filtering good or bad?"
+
+# ╔═╡ 21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
+
 
 # ╔═╡ Cell order:
 # ╠═31f2b14a-d9f2-11ee-01d6-4dd9050e0a83
@@ -200,7 +271,7 @@ Compare the singular value distributions for a 1000 × 1000 uniformly distribute
 # ╠═dfd82d31-2523-4bf6-9b58-51c48632170b
 # ╟─627d5352-c43a-4afe-8fb1-3d234e8f594e
 # ╠═a569ad57-9c2a-4f3e-9059-1b039340a9d4
-# ╠═70622515-7b18-4110-a751-60dc4a710f44
+# ╟─70622515-7b18-4110-a751-60dc4a710f44
 # ╟─4329f763-fb5a-4ec1-b9da-b62817da812d
 # ╠═1ef5cbdb-d780-4cd3-9bd8-2ebcea768f90
 # ╟─c7f9e533-95ed-4d6e-8708-956132c6ad9a
@@ -216,4 +287,15 @@ Compare the singular value distributions for a 1000 × 1000 uniformly distribute
 # ╟─00b71834-546c-4cda-a5e5-47836f5fd436
 # ╟─823f0389-26a2-4c5f-ae31-8b76ff2655c1
 # ╟─f1af5098-248f-4175-a647-2b5b5c6d187b
+# ╠═9e92eedc-17d1-477d-b767-818abb59d247
+# ╟─a8717234-cf67-4a12-8e29-c252ea6f05cd
+# ╟─e55c3f39-cdf4-476c-b359-c4ade88aa2c1
+# ╟─a81a9346-3cd9-458f-987b-e3ac01c7faba
+# ╟─beba89ea-4886-4bd1-bd8d-b0b957232bdd
+# ╟─c4329ed7-cb3e-4568-aaae-3f78d94534ee
+# ╟─9c2c124f-366c-42a4-a1cc-740aa14f7672
+# ╟─1bf98e6c-51fa-44c2-b9bb-c14b0bd393e7
+# ╟─7f34f4f4-1311-47c1-a343-dcfb36eb74b4
+# ╟─d3ce0903-84a0-4b1f-bdb2-ee95bbac3f06
 # ╟─efbad08c-40e4-4b47-9433-419a33a76047
+# ╠═21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
