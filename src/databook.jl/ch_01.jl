@@ -4,6 +4,16 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ 31f2b14a-d9f2-11ee-01d6-4dd9050e0a83
 # ╠═╡ show_logs = false
 begin
@@ -14,7 +24,7 @@ begin
 end;
 
 # ╔═╡ d7a6d9ba-066d-4214-aabc-13c9124389ab
-using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots, Compat
+using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots, Compat, PlutoUI
 
 # ╔═╡ 1c78d592-8b55-4171-b116-9afb4e7f9d25
 md"# Chapter 1 - SVD"
@@ -82,7 +92,6 @@ begin
 end
 
 # ╔═╡ 70622515-7b18-4110-a751-60dc4a710f44
-#=╠═╡
 begin
     p1 = plot(1:n, errors;
         ylabel="Frobenius norm",
@@ -108,7 +117,6 @@ begin
 
     plot(p1, p2, p3; layout=(3, 1), size=(600, 600))
 end
-  ╠═╡ =#
 
 # ╔═╡ 4329f763-fb5a-4ec1-b9da-b62817da812d
 md"## Exercise 1.3
@@ -210,6 +218,7 @@ begin
 		p1 = boxplot(sol[1];
 			legend=false,
 			title="Box-whisker plot",
+			ylims=(0,50),
 		)
 		p2 = plot(sol[1];
 			legend=false,
@@ -263,21 +272,89 @@ Compare the singular value distributions for a 1000 × 1000 uniformly distribute
 
 # ╔═╡ 21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
 begin
-	function solve_five()
-		X1 = rand(1000, 1000)
-		X2 = randn(1000, 1000)
+	function solve_five(σ)
+		# part 1
+		n = 1000
+		X1 = rand(n, n)
+		X2 = randn(n, n)
 		U1, S1, V1 = svd(X1)
 		U2, S2, V2 = svd(X2)
-		DS1, S2
+
+		# part 2: adding noise to the dog image and filtering it
+		# load the image, convert it gray scale, crop it to make it 1000x1000, add noise
+		X = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float |> v -> v[1:n, 1:n]
+		X_noisy_uniform = X + σ * rand(n, n)
+		X_noisy_gaussian = X + σ * randn(n, n)
+		U1, S1, Vt1 = svd(X_noisy_uniform)
+		U2, S2, Vt2 = svd(X_noisy_gaussian)
+		cutoff = (4/√3) * σ * √n
+		
+		r = findfirst(s -> s < cutoff, S1)
+		filtered_uniform = U1[:,1:r] * Diagonal(S1[1:r]) * Vt1[:, 1:r]'
+		r = findfirst(s -> s > .9, cumsum(S1) / sum(S1))
+		truncated_uniform =  U1[:,1:r] * Diagonal(S1[1:r]) * Vt1[:, 1:r]'
+		
+
+		r = findfirst(s -> s < cutoff, S2)
+		filtered_gaussian = U2[:,1:r] * Diagonal(S2[1:r]) * Vt2[:, 1:r]'
+		r = findfirst(s -> s > .9, cumsum(S2) / sum(S2))
+		truncated_gaussian = U2[:,1:r] * Diagonal(S2[1:r]) * Vt2[:, 1:r]'
+		S1, S2, X_noisy_uniform, X_noisy_gaussian, filtered_uniform, filtered_gaussian, truncated_uniform, truncated_gaussian
 	end
 
 	function plot_five(sol)
-		S1, S2 = sol
-		plot([S1, S2];
-			labels=reshape(["Uniform", "Gaussian"], 1, :)
+		S1, S2, X_noisy_uniform, X_noisy_gaussian, filtered_uniform, filtered_gaussian, truncated_uniform, truncated_gaussian = sol
+		p1 = plot(Gray.(Diagonal(S1));
+			axis=([], false),
+			title="Uniform",
 		)
+		
+		p2 = plot(Gray.(Diagonal(S2));
+			axis=([], false),
+			title="Gaussian",
+		)
+		p3 = plot([S1, S2];
+			labels=reshape(["Uniform", "Gaussian"], 1, :),
+		)
+		p4 = plot(Gray.(X_noisy_uniform); 
+			axis=([], false),
+			title="Noisy uniform",
+		)
+		p5 = plot(Gray.(filtered_uniform); 
+			axis=([], false),
+			title="Filtered uniform",
+		)
+		p6 = plot(Gray.(truncated_uniform); 
+			axis=([], false),
+			title="Truncated (90%) uniform",
+		)
+		p7 = plot(Gray.(X_noisy_gaussian); 
+			axis=([], false),
+			title="Noisy gaussian",
+		)
+		p8 = plot(Gray.(filtered_gaussian); 
+			axis=([], false),
+			title="Filtered gaussian",
+		)
+		p9 = plot(Gray.(truncated_gaussian); 
+			axis=([], false),
+			title="Truncated (90%) gaussian",
+		)
+		plot(p1, p2, p3, p4, p5, p6, p7, p8, p9; size=(1000, 1000))
 	end
 end
+
+# ╔═╡ 2468b1f9-2d31-4388-9368-0b826af18e27
+md"Noise: $(@bind σ5 Slider(0.2:0.01:1))"
+
+# ╔═╡ 49858770-312c-428f-b427-305fae1a2369
+plot_five(solve_five(σ5))
+
+# ╔═╡ a452e424-2c3c-4606-abae-f841dad6b46a
+md"
+!!! remark
+	The singular values for the uniformly distributed random noise fades slightly faster than the guaissian distributed noise. 
+"
 
 # ╔═╡ 93cced67-e8ae-4a76-a38e-9a996bdb25df
 md"## Exercise 1.6
@@ -424,7 +501,7 @@ $W' \approx AW$
 # ╟─00b71834-546c-4cda-a5e5-47836f5fd436
 # ╟─823f0389-26a2-4c5f-ae31-8b76ff2655c1
 # ╟─f1af5098-248f-4175-a647-2b5b5c6d187b
-# ╠═9e92eedc-17d1-477d-b767-818abb59d247
+# ╟─9e92eedc-17d1-477d-b767-818abb59d247
 # ╟─a8717234-cf67-4a12-8e29-c252ea6f05cd
 # ╟─e55c3f39-cdf4-476c-b359-c4ade88aa2c1
 # ╟─a81a9346-3cd9-458f-987b-e3ac01c7faba
@@ -432,10 +509,13 @@ $W' \approx AW$
 # ╟─c4329ed7-cb3e-4568-aaae-3f78d94534ee
 # ╟─9c2c124f-366c-42a4-a1cc-740aa14f7672
 # ╟─1bf98e6c-51fa-44c2-b9bb-c14b0bd393e7
-# ╟─7f34f4f4-1311-47c1-a343-dcfb36eb74b4
+# ╠═7f34f4f4-1311-47c1-a343-dcfb36eb74b4
 # ╟─d3ce0903-84a0-4b1f-bdb2-ee95bbac3f06
 # ╟─efbad08c-40e4-4b47-9433-419a33a76047
 # ╠═21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
+# ╟─2468b1f9-2d31-4388-9368-0b826af18e27
+# ╟─49858770-312c-428f-b427-305fae1a2369
+# ╟─a452e424-2c3c-4606-abae-f841dad6b46a
 # ╟─93cced67-e8ae-4a76-a38e-9a996bdb25df
 # ╠═bf245148-4bda-4bc2-ba8e-15fd0d416c07
 # ╟─436c13d6-1bc1-442c-bd54-e95586294bd9
