@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ d7a6d9ba-066d-4214-aabc-13c9124389ab
-using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots
+using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots, Compat
 
 # ╔═╡ 1c78d592-8b55-4171-b116-9afb4e7f9d25
 md"# Chapter 1 - SVD"
@@ -37,7 +37,7 @@ begin
     @assert !(Ũ * Ũ' ≈ I)
 end;
 
-# ╔═╡ ca108010-a5c2-429f-a884-ccb7240f9a10
+# ╔═╡ dfc64480-e2fb-4569-8ef9-be06eefafe81
 simshow(A), simshow(M)
 
 # ╔═╡ dfd82d31-2523-4bf6-9b58-51c48632170b
@@ -52,6 +52,7 @@ begin
     plot(errors_norm;
         xlabel="rank",
         ylabel="||e||",
+		legend=false,
     )
 end
 
@@ -81,6 +82,7 @@ begin
 end
 
 # ╔═╡ 70622515-7b18-4110-a751-60dc4a710f44
+#=╠═╡
 begin
     p1 = plot(1:n, errors;
         ylabel="Frobenius norm",
@@ -106,6 +108,7 @@ begin
 
     plot(p1, p2, p3; layout=(3, 1), size=(600, 600))
 end
+  ╠═╡ =#
 
 # ╔═╡ 4329f763-fb5a-4ec1-b9da-b62817da812d
 md"## Exercise 1.3
@@ -259,6 +262,140 @@ md"## Exercise 1.5
 Compare the singular value distributions for a 1000 × 1000 uniformly distributed random matrix and a Gaussian random matrix of the same size. Adapt the Gavish–Donoho algorithm to filter uniform noise based on this singular value distribution. Add uniform noise to a data set (either an image or the test low-rank signal) and apply this thresholding algorithm to filter the noise. Vary the magnitude of the noise and compare the results. Is the filtering good or bad?"
 
 # ╔═╡ 21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
+begin
+	function solve_five()
+		X1 = rand(1000, 1000)
+		X2 = randn(1000, 1000)
+		U1, S1, V1 = svd(X1)
+		U2, S2, V2 = svd(X2)
+		DS1, S2
+	end
+
+	function plot_five(sol)
+		S1, S2 = sol
+		plot([S1, S2];
+			labels=reshape(["Uniform", "Gaussian"], 1, :)
+		)
+	end
+end
+
+# ╔═╡ 93cced67-e8ae-4a76-a38e-9a996bdb25df
+md"## Exercise 1.6
+This exercise will test the concept of condition number. We will test the
+accuracy of solving **Ax = b** when noise is added to **b** for matrices **A** with different condition numbers.
+
+1. To build the two matrices, generate a random **U** ∈ $R^{100×100}$ and **V** ∈ $R^{100×100}$ and then create two **Σ** matrices: the first **Σ** will have singular values spaced logarithmically from 100 to 1, and the second **Σ** will have singular values spaced logarithmically from 100 to $10^{−6}$ . Use these matrices to create two **A** matrices, one with a condition number of 100 and the other with a condition number of 100 million. Now create a random **b** vector, solve for **x** using the two methods, and compare the results. Add a small **ϵ** to **b**, with norm $10^{−6}$ smaller than the norm of **b**. Now solve for **x** using this new **b + ϵ** and compare the results.
+2. Now repeat the experiment above with many different noise **ϵ** vectors and compute the distribution of the error; plot this error as a histogram and explain the shape.
+3. Repeat the above experiment comparing two **A** matrices with different singular value distributions: the first **Σ** will have values spaced linearly from 100 to 1 and the second **Σ** will have values spaced logarithmically from 100 to 1. Does anything change? Please explain why yes or no.
+
+4. Repeat the above experiment, but now with an **A** matrix that has size 100 × 10. Explain any changes
+"
+
+# ╔═╡ bf245148-4bda-4bc2-ba8e-15fd0d416c07
+begin
+	function solve_six()
+		U = randn(100, 100)
+		V = randn(100, 100)
+		b = randn(100, 1)
+		ϵ = (norm(b) - 1e-6) * randn(100, 1)
+		
+		# part 1
+		Σ₁ = reverse(logrange(1, 100, 100))
+		Σ₂ = reverse(logrange(1e-6, 100, 100))
+		A₁ = U  *  Diagonal(Σ₁) * V'
+		A₂ = U  *  Diagonal(Σ₂) * V'
+		x₁ = A₁ \ b
+		x₂ = A₂ \ b
+		xϵ₁ = A₁ \ (b + ϵ)
+		xϵ₂ = A₂ \ (b + ϵ)
+
+		# part 2
+		errs = zeros(10000)
+		for i in 1:10000
+			ϵ = (norm(b) - 1e-6) * randn(100, 1)
+			xϵᵢ = A₂ \ (b + ϵ)
+			errs[i] = norm(xϵᵢ)
+		end
+		
+		# part 3
+		Σ₃ = reverse(LinRange(1, 100, 100))
+		Σ₄ = reverse(logrange(1, 100, 100))
+		A₃ = U  *  Diagonal(Σ₃) * V'
+		A₄ = U  *  Diagonal(Σ₄) * V'
+		x₃ = A₃ \ b
+		x₄ = A₄ \ b
+		xϵ₃ = A₃ \ (b + ϵ)
+		xϵ₄ = A₄ \ (b + ϵ)
+		
+		# part 4
+		U = randn(100, 100)
+		V = randn(10, 10)
+		b = randn(100, 1)
+		ϵ = (norm(b) - 1e-6) * randn(100, 1)
+		Σ₅ = reverse(logrange(1, 100, 10))
+		Σ₆ = reverse(logrange(1e-6, 100, 10))
+		A₅ = U  *  [Diagonal(Σ₅); zeros(90, 10)] * V'
+		A₆ = U  *  [Diagonal(Σ₆); zeros(90, 10)] * V'
+		x₅ = A₅ \ b
+		x₆ = A₆ \ b
+		xϵ₅ = A₅ \ (b + ϵ)
+		xϵ₆ = A₆ \ (b + ϵ)
+		
+		x₁, x₂, x₃, x₄, x₅, x₆, xϵ₁, xϵ₂, xϵ₃, xϵ₄, xϵ₅, xϵ₆, errs
+	end
+
+	function plot_six(sol)
+		x₁, x₂, x₃, x₄, x₅, x₆, xϵ₁, xϵ₂, xϵ₃, xϵ₄, xϵ₅, xϵ₆, errs = sol
+		p1 = plot([x₁, x₂, xϵ₁, xϵ₂];
+			labels=reshape(["x₁", "x₂", "xϵ₁", "xϵ₂"], 1, :),
+			title="(a)",
+		)
+		p2 = histogram(errs; 
+			title="(b)",
+			label="errors",
+		)
+		p3 = plot([x₃, x₄, xϵ₃, xϵ₄];
+			labels=reshape(["x₃", "x₄", "xϵ₃", "xϵ₄"], 1, :),
+			title="(c)",
+		)
+		p4 = plot([x₅, x₆, xϵ₅, xϵ₆];
+			labels=reshape(["x₅", "x₆", "xϵ₅", "xϵ₆"], 1, :),
+			ls=reshape([:dash, :dashdot, :dash, :dashdot], 1, :),
+			title="(d)",
+		)
+
+		plot(p1, p2, p3, p4;
+			layout=(4,1),
+			size=(800, 800),
+		)
+	end
+end
+
+# ╔═╡ 436c13d6-1bc1-442c-bd54-e95586294bd9
+plot_six(solve_six())
+
+# ╔═╡ adb59fde-27e8-474c-a8c5-49eca0125d4f
+md"## Exercise 1.7
+Load the data set for fluid flow past a cylinder (you can either download this
+from our book [https://databookuw.com/](https://databookuw.com/) or generate it using the IBPM code on GitHub). Each
+column is a flow field that has been reshaped into a vector.
+
+1. Compute the SVD of this data set and plot the singular value spectrum and the leading singular vectors. The **U** matrix contains eigenflow fields and the **ΣV**∗ represents the amplitudes of these eigenflows as the flow evolves in time.
+
+2. Write a code to plot the reconstructed movie for various truncation values _r_. Compute the _r_ value needed to capture 90%, 99%, and 99.9% of the flow energy based on the singular value spectrum (recall that energy is given by the Frobenius norm squared). Plot the movies for each of these truncation values and compare the fidelity. Also compute the squared Frobenius norm of the error between the true matrix **X** and the reconstructed matrix **X̃**, where **X** is the flow field movie.
+
+3. Fix a value r = 10 and compute the truncated SVD. Each column $w_k$ ∈ $R^{10}$ of the matrix $W = \tilde\Sigma \tilde V^*$ represents the mixture of the first 10 eigenflows in the kth column of **X**. Verify this by comparing the kth snapshot of **X** with $\tilde U w_k$
+
+4. Now, build a linear regression model for how the amplitudes w_k evolve in time. This will be a dynamical system: 
+$w_{k+1} = Aw_k$
+4. Create a matrix **W** with the first 1 through m−1 columns of $\Sigma V^{*}$ and another matrix **W′** with the 2 through m columns of $\Sigma V^{*}$ . We will now try to solve for a best-fit **A** matrix so that
+$W' \approx AW$
+4. Compute the SVD of **W** and use this to compute the pseudo-inverse of **W** to solve for **A**. Compute the eigenvalues of **A** and plot them in the complex plane.
+
+5. Use this **A** matrix to advance the state $w_{k} = A^{k−1}w_1$ starting from w_1 . Plot the reconstructed flow field using these predicted amplitude vectors and compare with the true values.
+"
+
+# ╔═╡ 9962945b-6dc2-4978-bf63-3a6c75e106dd
 
 
 # ╔═╡ Cell order:
@@ -267,7 +404,7 @@ Compare the singular value distributions for a 1000 × 1000 uniformly distribute
 # ╟─1c78d592-8b55-4171-b116-9afb4e7f9d25
 # ╟─59db64bf-fb86-4183-b217-17d23abe8944
 # ╠═40eb744e-4150-442b-b8cf-9ee4bdc38542
-# ╠═ca108010-a5c2-429f-a884-ccb7240f9a10
+# ╠═dfc64480-e2fb-4569-8ef9-be06eefafe81
 # ╠═dfd82d31-2523-4bf6-9b58-51c48632170b
 # ╟─627d5352-c43a-4afe-8fb1-3d234e8f594e
 # ╠═a569ad57-9c2a-4f3e-9059-1b039340a9d4
@@ -299,3 +436,8 @@ Compare the singular value distributions for a 1000 × 1000 uniformly distribute
 # ╟─d3ce0903-84a0-4b1f-bdb2-ee95bbac3f06
 # ╟─efbad08c-40e4-4b47-9433-419a33a76047
 # ╠═21c2f9af-54c8-4e8f-aa7f-aa58a66a44e3
+# ╟─93cced67-e8ae-4a76-a38e-9a996bdb25df
+# ╠═bf245148-4bda-4bc2-ba8e-15fd0d416c07
+# ╟─436c13d6-1bc1-442c-bd54-e95586294bd9
+# ╟─adb59fde-27e8-474c-a8c5-49eca0125d4f
+# ╠═9962945b-6dc2-4978-bf63-3a6c75e106dd
