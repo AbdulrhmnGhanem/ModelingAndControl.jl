@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
@@ -43,7 +43,7 @@ begin
     u0_1 = [0, pi]
     tspan_1 = (0, pi / 1)
     bvp_1 = BVProblem(ode_1, bc_1, u0_1, tspan_1)
-    sol_1 = solve(bvp_1, GeneralMIRK4(), dt = 0.05)
+    sol_1 = solve(bvp_1)
 end;
 
 # ╔═╡ 049e5389-7705-4802-ab19-88ac94c12241
@@ -72,7 +72,7 @@ begin
     tspan_2 = (1, 2)
     u0_2 = [0.0, 24.0]
     bvp_2 = BVProblem(ode_2, bc_2, u0_2, tspan_2)
-    sol_2 = solve(bvp_2, GeneralMIRK4(), dt = 0.05)
+    sol_2 = solve(bvp_2)
 end;
 
 # ╔═╡ 760b3e04-9bec-464f-adb0-c56229becec6
@@ -112,7 +112,7 @@ begin
     end
 
     bvp_3_robin = BVProblem(ode_3, bc_3_robin, u0_3, tspan_3)
-    sol_3_robin = solve(bvp_3_robin, GeneralMIRK4(), dt = 0.05)
+    sol_3_robin = solve(bvp_3_robin)
 end;
 
 # ╔═╡ 80c5a736-4b1a-4799-b910-c223bf38859a
@@ -126,7 +126,7 @@ begin
     end
 
     bvp_3_dirichlet = BVProblem(ode_3, bc_3_dirchlet, u0_3, tspan_3)
-    sol_3_dirichlet = solve(bvp_3_dirichlet, GeneralMIRK4(), dt = 0.05)
+    sol_3_dirichlet = solve(bvp_3_dirichlet)
 end;
 
 # ╔═╡ 33ac91e8-43ec-4587-ad70-16158ce5c3ca
@@ -163,7 +163,7 @@ begin
     sols_4 = Vector{ODESolution}(undef, length(ωs))
     for (i, ω) in enumerate(ωs)
         bvp_4 = BVProblem(ode_4, bc_4, u0_4, tspan_4, ω)
-        sol_4 = solve(bvp_4, GeneralMIRK4(), dt = 0.01)
+        sol_4 = solve(bvp_4)
         sols_4[i] = sol_4
     end
 end;
@@ -202,11 +202,11 @@ begin
     p_5 = [100.0, -100.0]
 
     bvp_5 = BVProblem(ode_5, bc_5, u0_5, tspan_5, p_5)
-    sol_5 = solve(bvp_5, GeneralMIRK4(), dt = 0.005)
+    sol_5 = solve(bvp_5, MIRK4(), dt = 0.0005)
 end;
 
 # ╔═╡ 5a2c7d8a-d672-483e-b794-bb1e165fa13a
-plot(sol_5; idxs = [1], label = nothing, ylabel = "u")
+plot(sol_5.t, [sol_5(t)[1] for t in sol_5.t]; label = nothing, ylabel = "u")
 
 # ╔═╡ Cell order:
 # ╟─609d9590-1144-11ee-34dd-6da4e1760243

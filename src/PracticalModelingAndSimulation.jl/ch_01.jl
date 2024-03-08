@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
@@ -7,14 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(
-                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                "AbstractPlutoDingetjes",
-            )].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -30,21 +23,10 @@ begin
 end
 
 # ╔═╡ 98ca666d-fca1-4e8f-950d-c66a8cb81db3
-using DifferentialEquations, Plots, PlutoUI
-
-# ╔═╡ 28a9d730-4017-4786-bc60-8fb4981b4ed1
-# ╠═╡ show_logs = false
-begin
-    using SymPy
-    import_from(sympy)
-end
+using DifferentialEquations, Plots, PlutoUI, SymPy
 
 # ╔═╡ 32cccc2d-9eef-43c5-a441-fd112c2272e1
-md"# Analytical Solutions for ODEs
-
-!!! warning
-	Julia doesn't encourage analytcial solutions, so I am going to use `DifferentialEquations.jl` which takes a numerical approach just to get used to its API.
-"
+md"# Analytical Solutions for ODEs"
 
 # ╔═╡ f62e7973-f1ef-47bb-b29c-b838dec186a6
 md"## Example 8 - second order ODE
@@ -66,7 +48,7 @@ begin
 end
 
 # ╔═╡ 5c9a55da-7b48-45c8-9f9c-d6b4d79d237d
-prob = SecondOrderODEProblem(ode_8, du0, u0, tspan, []);
+prob = SecondOrderODEProblem(ode_8, du0, u0, tspan);
 
 # ╔═╡ c6dbbfd0-d46e-4f60-9287-7ce90a6a1469
 sol = solve(prob, DPRKN6(); reltol = 1e-12);
@@ -87,7 +69,7 @@ end;
 # ╔═╡ 4b201856-e4af-4cd0-bb57-1af254dc26f1
 begin
     plot(
-        sol;
+        sol.t, [[sol(t)[1] for t in collect(sol.t)], [sol(t)[2] for t in collect(sol.t)]];
         idx = [2, 1],
         title = "Simple Harmonic Oscillator",
         xaxis = "Time",
@@ -164,14 +146,14 @@ begin
     end
     u0_10 = [0.0]
     du0_10 = [0.0]
-    prob_10 = SecondOrderODEProblem(ode_10, du0_10, u0_10, tspan, [])
+    prob_10 = SecondOrderODEProblem(ode_10, du0_10, u0_10, tspan)
 end
 
 # ╔═╡ 86948555-aa8e-43e6-91d2-74268397acc5
 sol_10 = solve(prob_10, DPRKN6(); reltol = 1e-12);
 
 # ╔═╡ 133981dd-d36e-41de-a07c-0dd2ee1634cc
-plot(sol_10, idx = [2, 1]; label = ["du" "u"])
+plot(sol_10.t, [[sol_10(t)[1] for t in collect(sol_10.t)], [sol_10(t)[2] for t in collect(sol_10.t)]], idx = [2, 1]; label = ["du" "u"])
 
 # ╔═╡ 3d425689-f115-46bc-bea1-903bb64a2100
 md"## Example 11 - MuPad
@@ -190,14 +172,14 @@ begin
     u0_11 = [1.0]
     du0_11 = [2.0]
     tspan_11 = (-1, 13)
-    prob_11 = SecondOrderODEProblem(ode_11, du0_11, u0_11, tspan_11, [])
+    prob_11 = SecondOrderODEProblem(ode_11, du0_11, u0_11, tspan_11)
 end
 
 # ╔═╡ 86a26f4b-2b10-4228-b6e4-f7f893867980
 sol_11 = solve(prob_11, DPRKN6(); reltol = 1e-12);
 
 # ╔═╡ 1713685d-8b71-49a8-946a-fc64a2031319
-plot(sol_11, idx = [2, 1]; label = ["du" "u"])
+plot(sol_11.t, [[sol_11(t)[1] for t in collect(sol_11.t)], [sol_11(t)[2] for t in collect(sol_11.t)]]; label = ["du" "u"])
 
 # ╔═╡ ee381a04-9899-42b4-aee7-1e791312102f
 md"## Example 12 - Unstable
@@ -215,7 +197,7 @@ begin
     end
     u0_12 = [0.0]
     du0_12 = [0.0]
-    prob_12 = SecondOrderODEProblem(ode_12, du0_12, u0_12, tspan, [])
+    prob_12 = SecondOrderODEProblem(ode_12, du0_12, u0_12, tspan,)
 end
 
 # ╔═╡ ba1e3724-ff59-4e80-941d-3af5c08744a3
@@ -274,11 +256,14 @@ x(t) &= sin(2t)\\
 	We're using `SymPy` here because appearently no one cares about analytcial laplace transforms in the Julia ecosystem.
 "
 
+# ╔═╡ 16da06ed-7847-4271-b75e-c87c4b11968e
+sympy.laplace_transform
+
 # ╔═╡ b9232698-67b6-41f6-9116-ba9d8d2dc45f
 begin
-    @vars s tₛ postive = true
+    @syms s, tₛ
     f_1 = sin(2tₛ)
-    F_1 = laplace_transform(f_1, tₛ, s; noconds = True)
+    F_1 = sympy.laplace_transform(f_1, tₛ, s; noconds = true)
 end
 
 # ╔═╡ f7f2c9e0-1bb5-4534-9626-ae94ba5d424f
@@ -291,9 +276,9 @@ y(x) &= ax^3 + b\\
 
 # ╔═╡ 4cd7c0cb-584e-4b84-8253-c102cdec02dc
 begin
-    @vars xₛ aₛ bₛ
+    @syms xₛ aₛ bₛ
     f_2 = aₛ * xₛ^3 + bₛ
-    F_2 = laplace_transform(f_2, xₛ, s; noconds = True)
+    F_2 = sympy.laplace_transform(f_2, xₛ, s; noconds = true)
 end
 
 # ╔═╡ 02b69c62-e7e7-4498-bbd4-74bef6f11552
@@ -306,17 +291,17 @@ y(0) &= 0.5
 
 # ╔═╡ 3fb87ccb-a9c1-4e52-9d7e-849f86dbd39a
 begin
-    @vars yₛ
+    @syms yₛ
 
     y_18 = SymFunction("y")(tₛ)
     ode_18 = Eq(diff(y_18, tₛ) + 2 * y_18, 0)
-    lhs_18 = laplace_transform(ode_18.lhs, tₛ, s)[1]
-    rhs_18 = laplace_transform(ode_18.rhs, tₛ, s)[1]
+    lhs_18 = sympy.laplace_transform(ode_18.lhs, tₛ, s)[1]
+    rhs_18 = sympy.laplace_transform(ode_18.rhs, tₛ, s)[1]
     ODE_18 = Eq(lhs_18, rhs_18)
-    Y_18 = solve(ODE_18, laplace_transform(y_18, tₛ, s))[1][1]
+    Y_18 = solve(ODE_18, sympy.laplace_transform(y_18, tₛ, s))[1][1]
     # set initial conditions: we can assume heaviside is 1; y(0) 0.5 > 0
     Y_18 = Y_18.subs(y_18.subs(tₛ, 0), 0.5)
-    y_18 = inverse_laplace_transform(Y_18, s, tₛ).subs(Heaviside(tₛ), 1)
+    y_18 = sympy.inverse_laplace_transform(Y_18, s, tₛ).subs(Heaviside(tₛ), 1)
 end
 
 # ╔═╡ 77136f81-ea83-467c-ba91-e1f454ed7a48
@@ -335,13 +320,13 @@ ẏ(0) &= 2
 begin
     y_19 = SymFunction("y")(tₛ)
     ode_19 = Eq(diff(y_19, tₛ, 2) + diff(y_19, tₛ), sin(tₛ))
-    lhs = laplace_transform(ode_19.lhs, tₛ, s)[1]
-    rhs = laplace_transform(ode_19.rhs, tₛ, s)[1]
+    lhs = sympy.laplace_transform(ode_19.lhs, tₛ, s)[1]
+    rhs = sympy.laplace_transform(ode_19.rhs, tₛ, s)[1]
     ODE_19 = Eq(lhs, rhs)
-    Y_19 = solve(ODE_19, laplace_transform(y_19, tₛ, s)[1])[1]
+    Y_19 = solve(ODE_19, sympy.laplace_transform(y_19, tₛ, s)[1])[1]
     Y_19 = Y_19.subs(y_19.subs(tₛ, 0), 1).subs(diff(y_19, tₛ), 2)
     Y_19 = simplify(Y_19)
-    y_19 = inverse_laplace_transform(Y_19, s, tₛ).subs(Heaviside(tₛ), 1)
+    y_19 = sympy.inverse_laplace_transform(Y_19, s, tₛ).subs(Heaviside(tₛ), 1)
 end
 
 # ╔═╡ 5e309c0d-e33c-42c0-b9fc-ae0f90948119
@@ -358,7 +343,7 @@ plot(y_19, 0, 14; title = "ÿ + ẏ = sin(t)", xlabel = "t", ylabel = "y(t)", l
 # ╠═c6dbbfd0-d46e-4f60-9287-7ce90a6a1469
 # ╟─8327be9e-04fd-4cf3-bfab-f326e285474c
 # ╠═8db1e5f5-2591-4c69-a5e0-f9521dce75ac
-# ╠═4b201856-e4af-4cd0-bb57-1af254dc26f1
+# ╟─4b201856-e4af-4cd0-bb57-1af254dc26f1
 # ╠═f799db33-a4bf-4ec8-b12d-47a2005b6418
 # ╟─360d55ea-5da7-47bf-99bc-2dc44ad9b0af
 # ╠═a434b1fa-a4c9-4d36-baef-5d34d9abc6ac
@@ -367,12 +352,12 @@ plot(y_19, 0, 14; title = "ÿ + ẏ = sin(t)", xlabel = "t", ylabel = "y(t)", l
 # ╟─ad0d1102-a7aa-4942-8b45-76e695662663
 # ╠═cbb54be0-d5bc-4755-88b7-ef7e299777be
 # ╠═86948555-aa8e-43e6-91d2-74268397acc5
-# ╠═133981dd-d36e-41de-a07c-0dd2ee1634cc
+# ╟─133981dd-d36e-41de-a07c-0dd2ee1634cc
 # ╟─3d425689-f115-46bc-bea1-903bb64a2100
 # ╠═7d4f90cc-0010-4e18-9b90-1b7b86cf0c94
 # ╠═86a26f4b-2b10-4228-b6e4-f7f893867980
-# ╠═1713685d-8b71-49a8-946a-fc64a2031319
-# ╠═ee381a04-9899-42b4-aee7-1e791312102f
+# ╟─1713685d-8b71-49a8-946a-fc64a2031319
+# ╟─ee381a04-9899-42b4-aee7-1e791312102f
 # ╠═934924fd-60f0-47f4-92cd-8993da4c9043
 # ╠═ba1e3724-ff59-4e80-941d-3af5c08744a3
 # ╟─a235fadf-7f3b-40bc-b3f0-9e566385ca45
@@ -381,7 +366,7 @@ plot(y_19, 0, 14; title = "ÿ + ẏ = sin(t)", xlabel = "t", ylabel = "y(t)", l
 # ╠═f88a6192-6a39-40e9-8f16-2b3a62dd9a2a
 # ╠═346cc205-1ded-4823-8ff2-8d412a8598b4
 # ╟─cf6eb8a6-f751-4858-9f8a-e0d7b20f6dee
-# ╠═28a9d730-4017-4786-bc60-8fb4981b4ed1
+# ╠═16da06ed-7847-4271-b75e-c87c4b11968e
 # ╠═b9232698-67b6-41f6-9116-ba9d8d2dc45f
 # ╟─f7f2c9e0-1bb5-4534-9626-ae94ba5d424f
 # ╠═4cd7c0cb-584e-4b84-8253-c102cdec02dc
@@ -390,4 +375,4 @@ plot(y_19, 0, 14; title = "ÿ + ẏ = sin(t)", xlabel = "t", ylabel = "y(t)", l
 # ╟─77136f81-ea83-467c-ba91-e1f454ed7a48
 # ╟─3fde40b2-b83b-4b67-9fb1-0ad469529696
 # ╠═a479b28d-ef82-413c-a0a6-81bae6001780
-# ╠═5e309c0d-e33c-42c0-b9fc-ae0f90948119
+# ╟─5e309c0d-e33c-42c0-b9fc-ae0f90948119
