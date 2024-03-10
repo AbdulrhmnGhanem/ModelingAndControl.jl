@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 86d324dc-ffc9-4e17-9c07-f77a98bad08a
-using FileIO, LinearAlgebra, Plots, PlutoUI
+using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat
 
 # ╔═╡ 76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
 md"# Chapter 2 - Fourier and Wavelet Transforms"
@@ -26,7 +26,51 @@ the image at different compression ratios. Plot the error between the compressed
 "
 
 # ╔═╡ 0258268e-bd13-4c5a-80d6-c93e8b5cb3d2
+begin
+	function solve_one(ratios)
+		A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
+		B = fft(A)
+		B_abs = abs.(B)
+		B_abs_sorted = sort(B_abs[:])
+		
+		compressed = Array{Matrix{Float32}}(undef, length(ratios))
+		errors = similar(ratios)
+		for (i, ratio) in enumerate(ratios)
+			threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted)) |> Int]
+			mask = B_abs .> threshold
+			coeffecients = B .* mask
+			compressed[i] = real.(ifft(coeffecients))
+			errors[i] = norm(A - compressed[i])
+		end
+		log10.(B_abs), compressed, errors, ratios
+	end
+	
+	function plot_one(sol)
+		coefficients, compressed, errors, ratios = sol
+		p1 = plot(Gray.(coefficients);
+			axis=([], false),
+			title="coefficients",
+		)
+		ps = [
+			plot(Gray.(compressed[i]);
+				axis=([], false),
+				title=round(ratio;digits=4),
+			) for (i, ratio) in enumerate(ratios) ]
 
+		p3 = plot(ratios, errors;
+			xlabel="compression ratio",
+			ylabel="error",
+			legend=false,
+		)
+		
+		plot(p1, ps..., p3;
+			size=(900, 900),
+		)
+	end
+end
+
+# ╔═╡ 8b23a4c4-fb49-4e73-b833-538c8a992d54
+plot_one(solve_one(logrange(0.001, 0.9, 10)))
 
 # ╔═╡ 02bfe122-c0fa-461c-9531-168b4f09ec1f
 md"## Exercise 2.3
@@ -164,9 +208,10 @@ There is a great video explaining how to actually create these impulse responses
 # ╔═╡ Cell order:
 # ╠═d2096044-dc99-11ee-1393-9f98f23c7bc0
 # ╠═86d324dc-ffc9-4e17-9c07-f77a98bad08a
-# ╠═76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
+# ╟─76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
 # ╟─deb0d340-ef17-403c-9f7d-5467c6a0d5a7
 # ╠═0258268e-bd13-4c5a-80d6-c93e8b5cb3d2
+# ╟─8b23a4c4-fb49-4e73-b833-538c8a992d54
 # ╟─02bfe122-c0fa-461c-9531-168b4f09ec1f
 # ╠═5232e813-eb09-4af1-bb0f-931c6febf0d2
 # ╟─686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
