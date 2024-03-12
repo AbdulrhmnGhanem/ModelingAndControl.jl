@@ -14,10 +14,69 @@ begin
 end;
 
 # ╔═╡ 86d324dc-ffc9-4e17-9c07-f77a98bad08a
-using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat
+using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat, DifferentialEquations
 
 # ╔═╡ 76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
 md"# Chapter 2 - Fourier and Wavelet Transforms"
+
+# ╔═╡ 514d111e-163b-44f6-ae98-69b92113be06
+md"## Solving heat equation using FFT
+$u_t = \alpha^2u_{xx}$
+
+where $u(t,\ x)$ is the temperature distribution in time and space.
+
+$\mathcal{F}(u(t,\ x)) = \hat u(t, \ \omega)$
+
+$u_x \xrightarrow{\mathcal{F}} i k \hat u$
+
+
+$\hat u_t = - \alpha^2 k^2 \hat u$
+"
+
+# ╔═╡ de62eabe-e4de-4694-8652-2a5d64772084
+function heat()
+	α = 1.0
+	L = 100.0
+	N = 1000
+	dx = L / N
+	domain = range(-L/2, stop=L/2-dx, length=N)
+
+	u₀ = collect(0 * domain)
+	u₀[400:600] .= 1
+	u₀ = fft(u₀, 1)
+
+	kappa = (2π / L) * (-N/2:N/2-1)
+	kappa = fftshift(kappa, 1)
+	
+	tspan = (0, 10)
+	t = tspan[1]:0.1:tspan[2]
+	params = (α, kappa)
+
+	function rhs(dû, û, p, t)
+		α, k = p
+		dû .= -α^2 * (k.^2) .* û
+	end
+	prob = ODEProblem(rhs, u₀, tspan, params)
+	û = solve(prob)
+	u = zeros(Complex, size(û)...)
+	
+	for k in 1:length(eachcol(u))
+		u[:, k] = ifft(û[:, k])
+	end
+	sol = real(u)
+
+	@gif for i in 1:length(eachcol(sol))
+		plot(domain, sol[:,i];
+			ylims=(-0.01, 1),
+			legend=false,
+			title="t = $(round(û.t[i] *1000; digits=2)) ms",
+		)
+	end
+end
+
+# ╔═╡ bbc60ff6-5199-40cc-bf82-7cb15fffdae7
+# ╠═╡ show_logs = false
+heat()
 
 # ╔═╡ deb0d340-ef17-403c-9f7d-5467c6a0d5a7
 md"## Exercise 2.1
@@ -77,11 +136,18 @@ md"## Exercise 2.3
 Use the FFT to solve the Korteweg–de Vries (KdV) equation,
 
 $u_t + u_{xxx} - uu_x = 0$
-on a large domain with an initial condition u(x, 0) = sech(x). Plot the evolution.
+on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolution.
 "
 
 # ╔═╡ 5232e813-eb09-4af1-bb0f-931c6febf0d2
-
+begin
+	function solve_three()
+		
+	end
+	
+	function plot_three()
+	end
+end
 
 # ╔═╡ 686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
 md"## Exercise 2.4
@@ -89,7 +155,7 @@ Use the FFT to solve the Kuramoto–Sivashinsky (KS) equation,
 
 $u_t + u_{xx} + u_{xxxx} + \frac{1}{2} u^2_{x}$
 
-on a large domain with an initial condition u(x, 0) = sech(x). Plot the evolution.
+on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolution.
 "
 
 # ╔═╡ 81bafae5-e88d-41d7-9835-f92592a71e0e
@@ -209,6 +275,9 @@ There is a great video explaining how to actually create these impulse responses
 # ╠═d2096044-dc99-11ee-1393-9f98f23c7bc0
 # ╠═86d324dc-ffc9-4e17-9c07-f77a98bad08a
 # ╟─76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
+# ╟─514d111e-163b-44f6-ae98-69b92113be06
+# ╠═de62eabe-e4de-4694-8652-2a5d64772084
+# ╟─bbc60ff6-5199-40cc-bf82-7cb15fffdae7
 # ╟─deb0d340-ef17-403c-9f7d-5467c6a0d5a7
 # ╠═0258268e-bd13-4c5a-80d6-c93e8b5cb3d2
 # ╟─8b23a4c4-fb49-4e73-b833-538c8a992d54
