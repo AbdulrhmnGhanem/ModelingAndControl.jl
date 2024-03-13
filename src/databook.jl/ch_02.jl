@@ -10,7 +10,7 @@ begin
     # If you are running this notebook as a stannalone notebook disable this cell.
     import Pkg
     Pkg.activate(joinpath("..", ".."))
-    data_path = joinpath("..", "..", "books", "databook", "DATA")
+    data_path = joinpath("..", "..", "books", "DATA")
 end;
 
 # ╔═╡ 86d324dc-ffc9-4e17-9c07-f77a98bad08a
