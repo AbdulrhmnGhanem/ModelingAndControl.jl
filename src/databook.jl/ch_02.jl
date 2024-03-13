@@ -25,7 +25,7 @@ $u_t = \alpha^2u_{xx}$
 
 where $u(t,\ x)$ is the temperature distribution in time and space.
 
-$\mathcal{F}(u(t,\ x)) = \hat u(t, \ \omega)$
+$\mathcal{F}(u(t,\ x)) = \hat u(t, \ \kappa)$
 
 $u_x \xrightarrow{\mathcal{F}} i k \hat u$
 
@@ -45,12 +45,12 @@ function heat()
 	u₀[400:600] .= 1
 	u₀ = fft(u₀, 1)
 
-	kappa = (2π / L) * (-N/2:N/2-1)
-	kappa = fftshift(kappa, 1)
+	κ = (2π / L) * (-N/2:N/2-1)
+	κ = fftshift(κ, 1)
 	
-	tspan = (0, 10)
+	tspan = (0, 1000)
 	t = tspan[1]:0.1:tspan[2]
-	params = (α, kappa)
+	params = (α, κ)
 
 	function rhs(dû, û, p, t)
 		α, k = p
@@ -77,6 +77,54 @@ end
 # ╔═╡ bbc60ff6-5199-40cc-bf82-7cb15fffdae7
 # ╠═╡ show_logs = false
 heat()
+
+# ╔═╡ 6e3f102a-91a3-4540-bdce-aa615a7f3c2d
+md"## Solving Burgers’ equation using FFT
+
+$u_t + u u_x = νu_{xx}$
+"
+
+# ╔═╡ 9b024312-3adc-481e-a924-18364235e74d
+function burgers()
+	ν = 0.001
+	L = 20
+	N = 1000
+	dx = L / N
+	domain = range(-L/2, stop=L/2-dx, length=N)
+
+	κ = (2π / L) * (-N/2:N/2-1)
+	κ = fftshift(κ, 1)
+	u₀ = sech.(collect(domain))
+
+	tspan = (0, 2.5)
+	params = (κ, ν)
+
+	function rhs(dudt, u, p, t)
+		κ, ν = p
+		û = fft(u)
+		dû = im * κ .* û
+		ddû = -(κ .^ 2) .* û
+		du = ifft(dû)
+		ddu = ifft(ddû)
+		dudt .= real(-u .* du + ν * ddu)
+	end
+
+	prob = ODEProblem(rhs, u₀, tspan, params)
+	u = solve(prob, reltol=1e-10, abstol=1e-10)
+	sol, t = u[1:end, 1:end], u.t
+	
+	@gif for i in 1:length(eachcol(sol))
+		plot(domain, sol[:,i];
+			ylims=(-0.01, 1.1),
+			legend=false,
+			title="t = $(round(t[i] *1000; digits=2)) ms",
+		)
+	end
+end
+
+# ╔═╡ 3e7d55c7-bd24-442f-bbd1-b4d90509ae99
+# ╠═╡ show_logs = false
+burgers()
 
 # ╔═╡ deb0d340-ef17-403c-9f7d-5467c6a0d5a7
 md"## Exercise 2.1
@@ -278,6 +326,9 @@ There is a great video explaining how to actually create these impulse responses
 # ╟─514d111e-163b-44f6-ae98-69b92113be06
 # ╠═de62eabe-e4de-4694-8652-2a5d64772084
 # ╟─bbc60ff6-5199-40cc-bf82-7cb15fffdae7
+# ╟─6e3f102a-91a3-4540-bdce-aa615a7f3c2d
+# ╠═9b024312-3adc-481e-a924-18364235e74d
+# ╟─3e7d55c7-bd24-442f-bbd1-b4d90509ae99
 # ╟─deb0d340-ef17-403c-9f7d-5467c6a0d5a7
 # ╠═0258268e-bd13-4c5a-80d6-c93e8b5cb3d2
 # ╟─8b23a4c4-fb49-4e73-b833-538c8a992d54
