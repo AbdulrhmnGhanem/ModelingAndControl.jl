@@ -1,6 +1,3 @@
 [submodule "books/PracticalModelingAndSimulation.m"]
 	path = books/PracticalModelingAndSimulation.m
 	url = https://github.com/Apress/practical-matlab-modeling-w-simulink
-[submodule "books/databook"]
-	path = books/databook
-	url = https://github.com/dynamicslab/databook_python
