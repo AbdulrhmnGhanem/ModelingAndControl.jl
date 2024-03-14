@@ -14,7 +14,8 @@ begin
 end;
 
 # ╔═╡ 86d324dc-ffc9-4e17-9c07-f77a98bad08a
-using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat, DifferentialEquations
+# ╠═╡ show_logs = false
+using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat, DifferentialEquations, PlutoUI, MAT, Sound, DSP
 
 # ╔═╡ 76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
 md"# Chapter 2 - Fourier and Wavelet Transforms"
@@ -35,43 +36,43 @@ $\hat u_t = - \alpha^2 k^2 \hat u$
 
 # ╔═╡ de62eabe-e4de-4694-8652-2a5d64772084
 function heat()
-	α = 1.0
-	L = 100.0
-	N = 1000
-	dx = L / N
-	domain = range(-L/2, stop=L/2-dx, length=N)
+    α = 1.0
+    L = 100.0
+    N = 1000
+    dx = L / N
+    domain = range(-L / 2, stop=L / 2 - dx, length=N)
 
-	u₀ = collect(0 * domain)
-	u₀[400:600] .= 1
-	u₀ = fft(u₀, 1)
+    u₀ = collect(0 * domain)
+    u₀[400:600] .= 1
+    u₀ = fft(u₀, 1)
 
-	κ = (2π / L) * (-N/2:N/2-1)
-	κ = fftshift(κ, 1)
-	
-	tspan = (0, 1000)
-	t = tspan[1]:0.1:tspan[2]
-	params = (α, κ)
+    κ = (2π / L) * (-N/2:N/2-1)
+    κ = fftshift(κ, 1)
 
-	function rhs(dû, û, p, t)
-		α, k = p
-		dû .= -α^2 * (k.^2) .* û
-	end
-	prob = ODEProblem(rhs, u₀, tspan, params)
-	û = solve(prob)
-	u = zeros(Complex, size(û)...)
-	
-	for k in 1:length(eachcol(u))
-		u[:, k] = ifft(û[:, k])
-	end
-	sol = real(u)
+    tspan = (0, 1000)
+    t = tspan[1]:0.1:tspan[2]
+    params = (α, κ)
 
-	@gif for i in 1:length(eachcol(sol))
-		plot(domain, sol[:,i];
-			ylims=(-0.01, 1),
-			legend=false,
-			title="t = $(round(û.t[i] *1000; digits=2)) ms",
-		)
-	end
+    function rhs(dû, û, p, t)
+        α, k = p
+        dû .= -α^2 * (k .^ 2) .* û
+    end
+    prob = ODEProblem(rhs, u₀, tspan, params)
+    û = solve(prob)
+    u = zeros(Complex, size(û)...)
+
+    for k in 1:length(eachcol(u))
+        u[:, k] = ifft(û[:, k])
+    end
+    sol = real(u)
+
+    @gif for i in 1:length(eachcol(sol))
+        plot(domain, sol[:, i];
+            ylims=(-0.01, 1),
+            legend=false,
+            title="t = $(round(û.t[i] *1000; digits=2)) ms",
+        )
+    end
 end
 
 # ╔═╡ bbc60ff6-5199-40cc-bf82-7cb15fffdae7
@@ -86,40 +87,40 @@ $u_t + u u_x = νu_{xx}$
 
 # ╔═╡ 9b024312-3adc-481e-a924-18364235e74d
 function burgers()
-	ν = 0.001
-	L = 20
-	N = 1000
-	dx = L / N
-	domain = range(-L/2, stop=L/2-dx, length=N)
+    ν = 0.001
+    L = 20
+    N = 1000
+    dx = L / N
+    domain = range(-L / 2, stop=L / 2 - dx, length=N)
 
-	κ = (2π / L) * (-N/2:N/2-1)
-	κ = fftshift(κ, 1)
-	u₀ = sech.(collect(domain))
+    κ = (2π / L) * (-N/2:N/2-1)
+    κ = fftshift(κ, 1)
+    u₀ = sech.(collect(domain))
 
-	tspan = (0, 2.5)
-	params = (κ, ν)
+    tspan = (0, 2.5)
+    params = (κ, ν)
 
-	function rhs(dudt, u, p, t)
-		κ, ν = p
-		û = fft(u)
-		dû = im * κ .* û
-		ddû = -(κ .^ 2) .* û
-		du = ifft(dû)
-		ddu = ifft(ddû)
-		dudt .= real(-u .* du + ν * ddu)
-	end
+    function rhs(dudt, u, p, t)
+        κ, ν = p
+        û = fft(u)
+        dû = im * κ .* û
+        ddû = -(κ .^ 2) .* û
+        du = ifft(dû)
+        ddu = ifft(ddû)
+        dudt .= real(-u .* du + ν * ddu)
+    end
 
-	prob = ODEProblem(rhs, u₀, tspan, params)
-	u = solve(prob, reltol=1e-10, abstol=1e-10)
-	sol, t = u[1:end, 1:end], u.t
-	
-	@gif for i in 1:length(eachcol(sol))
-		plot(domain, sol[:,i];
-			ylims=(-0.01, 1.1),
-			legend=false,
-			title="t = $(round(t[i] *1000; digits=2)) ms",
-		)
-	end
+    prob = ODEProblem(rhs, u₀, tspan, params)
+    u = solve(prob, reltol=1e-10, abstol=1e-10)
+    sol, t = u[1:end, 1:end], u.t
+
+    @gif for i in 1:length(eachcol(sol))
+        plot(domain, sol[:, i];
+            ylims=(-0.01, 1.1),
+            legend=false,
+            title="t = $(round(t[i] *1000; digits=2)) ms",
+        )
+    end
 end
 
 # ╔═╡ 3e7d55c7-bd24-442f-bbd1-b4d90509ae99
@@ -134,46 +135,46 @@ the image at different compression ratios. Plot the error between the compressed
 
 # ╔═╡ 0258268e-bd13-4c5a-80d6-c93e8b5cb3d2
 begin
-	function solve_one(ratios)
-		A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
-		B = fft(A)
-		B_abs = abs.(B)
-		B_abs_sorted = sort(B_abs[:])
-		
-		compressed = Array{Matrix{Float32}}(undef, length(ratios))
-		errors = similar(ratios)
-		for (i, ratio) in enumerate(ratios)
-			threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted)) |> Int]
-			mask = B_abs .> threshold
-			coeffecients = B .* mask
-			compressed[i] = real.(ifft(coeffecients))
-			errors[i] = norm(A - compressed[i])
-		end
-		log10.(B_abs), compressed, errors, ratios
-	end
-	
-	function plot_one(sol)
-		coefficients, compressed, errors, ratios = sol
-		p1 = plot(Gray.(coefficients);
-			axis=([], false),
-			title="coefficients",
-		)
-		ps = [
-			plot(Gray.(compressed[i]);
-				axis=([], false),
-				title=round(ratio;digits=4),
-			) for (i, ratio) in enumerate(ratios) ]
+    function solve_one(ratios)
+        A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
+        B = fft(A)
+        B_abs = abs.(B)
+        B_abs_sorted = sort(B_abs[:])
 
-		p3 = plot(ratios, errors;
-			xlabel="compression ratio",
-			ylabel="error",
-			legend=false,
-		)
-		
-		plot(p1, ps..., p3;
-			size=(900, 900),
-		)
-	end
+        compressed = Array{Matrix{Float32}}(undef, length(ratios))
+        errors = similar(ratios)
+        for (i, ratio) in enumerate(ratios)
+            threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted))|>Int]
+            mask = B_abs .> threshold
+            coeffecients = B .* mask
+            compressed[i] = real.(ifft(coeffecients))
+            errors[i] = norm(A - compressed[i])
+        end
+        log10.(B_abs), compressed, errors, ratios
+    end
+
+    function plot_one(sol)
+        coefficients, compressed, errors, ratios = sol
+        p1 = plot(Gray.(coefficients);
+            axis=([], false),
+            title="coefficients",
+        )
+        ps = [
+            plot(Gray.(compressed[i]);
+                axis=([], false),
+                title=round(ratio; digits=4),
+            ) for (i, ratio) in enumerate(ratios)]
+
+        p3 = plot(ratios, errors;
+            xlabel="compression ratio",
+            ylabel="error",
+            legend=false,
+        )
+
+        plot(p1, ps..., p3;
+            size=(900, 900),
+        )
+    end
 end
 
 # ╔═╡ 8b23a4c4-fb49-4e73-b833-538c8a992d54
@@ -189,42 +190,43 @@ on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolut
 
 # ╔═╡ 5232e813-eb09-4af1-bb0f-931c6febf0d2
 function solve_three()
-	L = 100.0
-	N = 1000
-	dx = L / N
-	domain = range(-L/2, stop=L/2-dx, length=N)
+    L = 100.0
+    N = 1000
+    dx = L / N
+    domain = range(-L / 2, stop=L / 2 - dx, length=N)
 
-	κ = (2π / L) * (-N/2:N/2-1)
-	κ = fftshift(κ, 1)
-	u₀ = sech.(collect(domain))
-	
-	tspan = (0, 2.5)
+    κ = (2π / L) * (-N/2:N/2-1)
+    κ = fftshift(κ, 1)
+    u₀ = sech.(collect(domain))
 
-	function rhs(dudt, u, p, t)
-		û = fft(u)
-		dû = im * κ .* û
-		dddû = -im * (κ .^ 3) .* û
-		du = ifft(dû)
-		dddu = ifft(dddû)
-		dudt .= real(u .* du + dddu)
-	end
-	t = tspan[1]:tspan[2]/100:tspan[2]
-		
-	prob = ODEProblem(rhs, u₀, tspan)
-	u = solve(prob, saveat=t, reltol=1e-10, abstol=1e-10)
-	sol, t = u[1:end, 1:end], u.t
+    tspan = (0, 4)
+
+    function rhs(dudt, u, p, t)
+        û = fft(u)
+        dû = im * κ .* û
+        dddû = -im * (κ .^ 3) .* û
+        du = ifft(dû)
+        dddu = ifft(dddû)
+        dudt .= real(u .* du + dddu)
+    end
+    t = tspan[1]:tspan[2]/500:tspan[2]
+
+    prob = ODEProblem(rhs, u₀, tspan)
+    u = solve(prob, saveat=t, reltol=1e-10, abstol=1e-10)
+    sol, t = u[1:end, 1:end], u.t
 
 
-	@gif for i in 1:length(eachcol(sol))
-		plot(domain, sol[:,i];
-			ylims=(-0.25, 1),
-			legend=false,
-			title="t = $(round(t[i] *1000; digits=2)) ms",
-		)
-	end
+    @gif for i in 1:length(eachcol(sol))
+        plot(domain, sol[:, i];
+            ylims=(-0.25, 1),
+            legend=false,
+            title="t = $(round(t[i] *1000; digits=2)) ms",
+        )
+    end
 end
 
 # ╔═╡ 24cecda6-49ba-4958-b83a-e0cd579eebf3
+# ╠═╡ show_logs = false
 solve_three()
 
 # ╔═╡ 686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
@@ -238,43 +240,44 @@ on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolut
 
 # ╔═╡ 81bafae5-e88d-41d7-9835-f92592a71e0e
 function solve_four()
-	L = 100.0
-	N = 1000
-	dx = L / N
-	domain = range(-L/2, stop=L/2-dx, length=N)
+    L = 100.0
+    N = 1000
+    dx = L / N
+    domain = range(-L / 2, stop=L / 2 - dx, length=N)
 
-	κ = (2π / L) * (-N/2:N/2-1)
-	κ = fftshift(κ, 1)
-	u₀ = sech.(collect(domain))
-	
-	tspan = (0, 5)
+    κ = (2π / L) * (-N/2:N/2-1)
+    κ = fftshift(κ, 1)
+    u₀ = sech.(collect(domain))
 
-	function rhs(dudt, u, p, t)
-		û = fft(u)
-		dû = im * κ .* û
-		ddû = -(κ .^ 2) .* û
-		ddddû = (κ .^ 4) .* û
-		du = ifft(dû)
-		ddu = ifft(ddû)
-		ddddu = ifft(ddddû)
-		dudt .= real(0.5 .* du .^ 2 - ddu - ddddu)
-	end
-	t = tspan[1]:tspan[2]/200:tspan[2]
-		
-	prob = ODEProblem(rhs, u₀, tspan)
-	u = solve(prob, saveat=t)
-	sol, t = u[1:end, 1:end], u.t
+    tspan = (0, 5)
 
-	@gif for i in 1:length(eachcol(sol))
-		plot(domain, sol[:,i];
-			ylims=(-0.5, 1.75),
-			legend=false,
-			title="t = $(round(t[i] *1000; digits=2)) ms",
-		)
-	end
+    function rhs(dudt, u, p, t)
+        û = fft(u)
+        dû = im * κ .* û
+        ddû = -(κ .^ 2) .* û
+        ddddû = (κ .^ 4) .* û
+        du = ifft(dû)
+        ddu = ifft(ddû)
+        ddddu = ifft(ddddû)
+        dudt .= real(0.5 .* du .^ 2 - ddu - ddddu)
+    end
+    t = tspan[1]:tspan[2]/200:tspan[2]
+
+    prob = ODEProblem(rhs, u₀, tspan)
+    u = solve(prob, saveat=t)
+    sol, t = u[1:end, 1:end], u.t
+
+    @gif for i in 1:length(eachcol(sol))
+        plot(domain, sol[:, i];
+            ylims=(-0.5, 1.75),
+            legend=false,
+            title="t = $(round(t[i] *1000; digits=2)) ms",
+        )
+    end
 end
 
 # ╔═╡ 3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
+# ╠═╡ show_logs = false
 solve_four()
 
 # ╔═╡ bc581a79-8649-4aa1-a604-5d5bee07ac13
@@ -283,21 +286,18 @@ Solve for the analytic equilibrium temperature distribution using the 2D
 Laplace equation on an L × H sized rectangular domain with the following boundary
 conditions.
 
-(a) Left: ux(0, y) = 0 (insulating).
+(a) Left: $u_x(0, y) = 0$ (insulating).
 
-(b) Bottom: u(x, 0) = 0 (fixed temperature).
+(b) Bottom: $u(x, 0) = 0$ (fixed temperature).
 
-(c) Top: u(x, H) = f (x) (zero temperature).
+(c) Top: $u(x, H) = f(x)$ (zero temperature).
 
-(d) Right: ux(L, y) = 0 (insulating).
+(d) Right: $u_x(L, y) = 0$ (insulating).
 
 
 ![image](https://raw.githubusercontent.com/AbdulrhmnGhanem/ModelingAndControl.jl/main/src/databook.jl/temperature.png)
 
-Solve for a general boundary temperature f (x). Also solve for a particular temperature
-distribution f (x); you may choose any non-constant distribution you like.
-How would this change if the left and right boundaries were fixed at zero temperature?
-(You do not have to solve this new problem, just explain in words what would change.)
+Solve for a general boundary temperature $f(x)$. Also solve for a particular temperature distribution $f(x)$; you may choose any non-constant distribution you like. How would this change if the left and right boundaries were fixed at zero temperature? (You do not have to solve this new problem, just explain in words what would change.)
 "
 
 # ╔═╡ 58901914-fe97-4675-a11c-2f8c9d603c0f
@@ -353,14 +353,13 @@ with separation of variables until you hit a contradiction.)
 md"## Exercise 2.8
 
 Now, we will use the FFT to simultaneously compress and re-
-master an audio file. Please download the file r2112.mat and load the audio data into
-the matrix rush and the sample rate FS.
+master an audio file. Please download the file _r2112.mat_ and load the audio data into the matrix _rush_ and the sample rate FS.
 
-1. Listen to the audio signal (»sound(rush,FS);). Compute the FFT of this audio signal.
+1. Listen to the audio signal `(»sound(rush,FS);)`. Compute the FFT of this audio signal.
 
 2. Compute the power spectral density vector. Plot this to see what the output looks like. Also plot the spectrogram.
 
-3. Now, download r2112noisy.mat and load this file to initialize the variable rushnoisy. This signal is corrupted with high-frequency artifacts. Manually zero the last three-quarters of the Fourier components of this noisy signal (if n=length(rushnoisy), then zero-out all Fourier coefficients from n/4:n). Use this filtered frequency spectrum to reconstruct the clean audio signal. When reconstructing, be sure to take the real part of the inverse Fourier transform: cleansignal=real(ifft(filteredcoefs));.
+3. Now, download `r2112noisy.mat` and load this file to initialize the variable `rushnoisy`. This signal is corrupted with high-frequency artifacts. Manually zero the last three-quarters of the Fourier components of this noisy signal (if `n=length(rushnoisy)`, then zero-out all Fourier coefficients from `n/4:n`). Use this filtered frequency spectrum to reconstruct the clean audio signal. When reconstructing, be sure to take the real part of the inverse Fourier transform: `cleansignal=real(ifft(filteredcoefs));`.
 
 Because we are only keeping the first quarter of the frequency data, you must
 multiply the reconstructed signal by 2 so that it has the correct normalized power.
@@ -369,7 +368,77 @@ Plot the power spectral density and spectrograms of the pre- and post-filtered s
 "
 
 # ╔═╡ 131297f3-8cac-4dab-8f8c-4c4ad29efd56
+function solve_eight()
+    r2112 = matread(joinpath(data_path, "r2112.mat"))
+    r2112_noisy = matread(joinpath(data_path, "r2112noisy.mat"))
+    rush = r2112["rush"]
+    rush_noisy = r2112_noisy["rushnoisy"]
+    N = length(rush)
+    fₛ = r2112["FS"]
 
+    RUSH = fft(rush)
+    psd = abs2.(RUSH) / (N * fₛ)
+    RUSH_NOISY = fft(rush_noisy)
+    psd_noisy = abs2.(RUSH_NOISY) / (N * fₛ)
+    RUSH_CLEAN = deepcopy(RUSH_NOISY)
+    RUSH_CLEAN[N÷4:N] .= 0
+    rush_clean = 2 * ifft(real(RUSH_CLEAN))
+    psd_clean = abs2.(fft(rush_clean)) / (N * fₛ)
+
+
+    p1 = plot(1:fₛ, real(RUSH[1:N÷2]);
+        legend=false,
+        xlabel="Freq (Hz)",
+        ylabel="Amplitude",
+        title="original spectrum",
+    )
+    p2 = plot(1:fₛ, amp2db.(psd[1:N÷2]);
+        legend=false,
+        xlabel="Freq (Hz)",
+        ylabel="PSD (dB / Hz)",
+        title="original PSD",
+    )
+    p3 = plot(1:fₛ, real(RUSH_NOISY[1:N÷2]);
+        legend=false,
+        ylabel="Amplitude",
+        xlabel="Freq (Hz)",
+        title="noisy spectrum",
+    )
+    p4 = plot(1:fₛ, amp2db.(psd_noisy[1:N÷2]);
+        legend=false,
+        xlabel="Freq (Hz)",
+        ylabel="PSD (dB / Hz)",
+        title="noisy PSD",
+    )
+
+    p5 = plot(1:fₛ, real(RUSH_CLEAN[1:N÷2]);
+        legend=false,
+        ylabel="Amplitude",
+        xlabel="Freq (Hz)",
+        title="clean spectrum",
+    )
+    p6 = plot(1:fₛ, amp2db.(psd_clean[1:N÷2]);
+        legend=false,
+        xlabel="Freq (Hz)",
+        ylabel="PSD (dB / Hz)",
+        title="clean PSD",
+        ylim=(-400, 0),
+    )
+    plot(p1, p2, p3, p4, p5, p6;
+        layout=(3, 2),
+        size=(600, 800)
+    )
+end
+
+# ╔═╡ 2d13b62d-6ebe-41af-8ba7-c02d1bebbfc0
+solve_eight()
+
+# ╔═╡ 10eb7f7f-5a06-4ee9-bfba-fb5b9cc4a99c
+md"
+!!! remarks
+	$\text{power spectral density (PSD)} = \frac{\text{power spectrum}}{\text{Equivalent Noise bandwidth (ENB)}}$
+	$\text{PSD (for rectangular window)} = \frac{|\text{fft}|^2}{Nf_s}$
+"
 
 # ╔═╡ 16374e5a-d05a-450c-bec7-4a65b83141a3
 md"## Exercise 2.9
@@ -405,7 +474,7 @@ There is a great video explaining how to actually create these impulse responses
 # ╠═24cecda6-49ba-4958-b83a-e0cd579eebf3
 # ╟─686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
 # ╠═81bafae5-e88d-41d7-9835-f92592a71e0e
-# ╟─3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
+# ╠═3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
 # ╟─bc581a79-8649-4aa1-a604-5d5bee07ac13
 # ╠═58901914-fe97-4675-a11c-2f8c9d603c0f
 # ╟─db6e0b60-67b0-469d-b03c-1b4f966701af
@@ -414,5 +483,7 @@ There is a great video explaining how to actually create these impulse responses
 # ╠═fb0caf3f-2ae1-4a74-ad81-400fa4fe7f4f
 # ╟─f01710e1-489e-4913-8476-2fca7cc9a0a6
 # ╠═131297f3-8cac-4dab-8f8c-4c4ad29efd56
+# ╟─2d13b62d-6ebe-41af-8ba7-c02d1bebbfc0
+# ╟─10eb7f7f-5a06-4ee9-bfba-fb5b9cc4a99c
 # ╟─16374e5a-d05a-450c-bec7-4a65b83141a3
 # ╠═4c7de71a-7bb3-4c66-a49c-d8634570bfab
