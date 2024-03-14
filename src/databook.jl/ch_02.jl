@@ -188,41 +188,39 @@ on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolut
 "
 
 # ╔═╡ 5232e813-eb09-4af1-bb0f-931c6febf0d2
-begin
-	function solve_three()
-		L = 100.0
-		N = 1000
-		dx = L / N
-		domain = range(-L/2, stop=L/2-dx, length=N)
+function solve_three()
+	L = 100.0
+	N = 1000
+	dx = L / N
+	domain = range(-L/2, stop=L/2-dx, length=N)
 
-		κ = (2π / L) * (-N/2:N/2-1)
-		κ = fftshift(κ, 1)
-		u₀ = sech.(collect(domain))
+	κ = (2π / L) * (-N/2:N/2-1)
+	κ = fftshift(κ, 1)
+	u₀ = sech.(collect(domain))
+	
+	tspan = (0, 2.5)
+
+	function rhs(dudt, u, p, t)
+		û = fft(u)
+		dû = im * κ .* û
+		dddû = -im * (κ .^ 3) .* û
+		du = ifft(dû)
+		dddu = ifft(dddû)
+		dudt .= real(u .* du + dddu)
+	end
+	t = tspan[1]:tspan[2]/100:tspan[2]
 		
-		tspan = (0, 2.5)
-
-		function rhs(dudt, u, p, t)
-			û = fft(u)
-			dû = im * κ .* û
-			dddû = -im * (κ .^ 3) .* û
-			du = ifft(dû)
-			dddu = ifft(dddû)
-			dudt .= real(u .* du + dddu)
-		end
-		t = tspan[1]:tspan[2]/100:tspan[2]
-			
-		prob = ODEProblem(rhs, u₀, tspan)
-		u = solve(prob, saveat=t, reltol=1e-10, abstol=1e-10)
-		sol, t = u[1:end, 1:end], u.t
+	prob = ODEProblem(rhs, u₀, tspan)
+	u = solve(prob, saveat=t, reltol=1e-10, abstol=1e-10)
+	sol, t = u[1:end, 1:end], u.t
 
 
-		@gif for i in 1:length(eachcol(sol))
-			plot(domain, sol[:,i];
-				ylims=(-0.25, 1),
-				legend=false,
-				title="t = $(round(t[i] *1000; digits=2)) ms",
-			)
-		end
+	@gif for i in 1:length(eachcol(sol))
+		plot(domain, sol[:,i];
+			ylims=(-0.25, 1),
+			legend=false,
+			title="t = $(round(t[i] *1000; digits=2)) ms",
+		)
 	end
 end
 
@@ -239,7 +237,45 @@ on a large domain with an initial condition $u(x, 0) = sech(x)$. Plot the evolut
 "
 
 # ╔═╡ 81bafae5-e88d-41d7-9835-f92592a71e0e
+function solve_four()
+	L = 100.0
+	N = 1000
+	dx = L / N
+	domain = range(-L/2, stop=L/2-dx, length=N)
 
+	κ = (2π / L) * (-N/2:N/2-1)
+	κ = fftshift(κ, 1)
+	u₀ = sech.(collect(domain))
+	
+	tspan = (0, 5)
+
+	function rhs(dudt, u, p, t)
+		û = fft(u)
+		dû = im * κ .* û
+		ddû = -(κ .^ 2) .* û
+		ddddû = (κ .^ 4) .* û
+		du = ifft(dû)
+		ddu = ifft(ddû)
+		ddddu = ifft(ddddû)
+		dudt .= real(0.5 .* du .^ 2 - ddu - ddddu)
+	end
+	t = tspan[1]:tspan[2]/200:tspan[2]
+		
+	prob = ODEProblem(rhs, u₀, tspan)
+	u = solve(prob, saveat=t)
+	sol, t = u[1:end, 1:end], u.t
+
+	@gif for i in 1:length(eachcol(sol))
+		plot(domain, sol[:,i];
+			ylims=(-0.5, 1.75),
+			legend=false,
+			title="t = $(round(t[i] *1000; digits=2)) ms",
+		)
+	end
+end
+
+# ╔═╡ 3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
+solve_four()
 
 # ╔═╡ bc581a79-8649-4aa1-a604-5d5bee07ac13
 md"## Exercise 2.5
@@ -369,6 +405,7 @@ There is a great video explaining how to actually create these impulse responses
 # ╠═24cecda6-49ba-4958-b83a-e0cd579eebf3
 # ╟─686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
 # ╠═81bafae5-e88d-41d7-9835-f92592a71e0e
+# ╟─3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
 # ╟─bc581a79-8649-4aa1-a604-5d5bee07ac13
 # ╠═58901914-fe97-4675-a11c-2f8c9d603c0f
 # ╟─db6e0b60-67b0-469d-b03c-1b4f966701af
