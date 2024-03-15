@@ -37,8 +37,8 @@ jobs:
           path: |
             .cache
             .build
-          key: cache-pluto-${{ github.event.repository.updated_at }}
-          restore-keys: cache-pluto-
+          key: cache-pluto
+          restore-keys: cache-pluto
 
       - name: Run build.jl
         run: julia --project=. build.jl
