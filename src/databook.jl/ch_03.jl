@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, PlutoUI
+using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -77,7 +77,42 @@ This example will explore geometry and sampling probabilities in high-dimensiona
 "
 
 # ╔═╡ 902809dc-675d-4e0b-80ac-d99d88ecc27d
+function solve_two()
+	L = 2
+	R = 1
+	num_darts = 10_000
+	dist = Uniform(0, L)
 
+	darts = Vector{Matrix{Float64}}(undef, num_darts)
+	for i in 1:num_darts
+		darts[i]= rand(dist, 1, 2)		
+	end
+
+	distance(p) = sqrt((p[1] - 1)^2 + (p[2] - 1)^2)
+	fraction_of_darts_inside_circle =  num_darts / length(filter(d -> d .< R, map(distance, darts)))
+	fraction_of_area = L^2 / π*R^2
+	
+	@assert round(fraction_of_area;digits=1) == round(fraction_of_darts_inside_circle; digits=1)
+
+	scatter([d[1] for d in darts], [d[2] for d in darts];
+		size=(900, 900),
+		legend=false,
+	)
+	function circle(h, k, r)
+		θ = LinRange(0, 2π, 500)
+		h .+ r * sin.(θ), k .+ r * cos.(θ)
+	end
+	plot!(circle(1, 1, R);
+		seriestype=[:shape],
+		fillalpha=0.5,
+		aspect_ratio=1,
+	)
+
+	# Continue the rest of the exercise.
+end
+
+# ╔═╡ 61953b78-378e-4127-86f6-3ad4afc2c4bc
+solve_two()
 
 # ╔═╡ 38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 md"## Exercise 3.3
@@ -176,6 +211,7 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╟─b55f6990-88fe-4fd6-8827-c39e1adf6eb4
 # ╟─d4c32227-7f0b-4962-ba92-78df8978cd92
 # ╠═902809dc-675d-4e0b-80ac-d99d88ecc27d
+# ╟─61953b78-378e-4127-86f6-3ad4afc2c4bc
 # ╟─38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 # ╠═7265beb5-13af-4afa-ac7d-604029b9ff85
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e
