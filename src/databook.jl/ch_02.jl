@@ -471,10 +471,10 @@ There is a great video explaining how to actually create these impulse responses
 # ╟─8b23a4c4-fb49-4e73-b833-538c8a992d54
 # ╟─02bfe122-c0fa-461c-9531-168b4f09ec1f
 # ╠═5232e813-eb09-4af1-bb0f-931c6febf0d2
-# ╠═24cecda6-49ba-4958-b83a-e0cd579eebf3
+# ╟─24cecda6-49ba-4958-b83a-e0cd579eebf3
 # ╟─686fcd81-b13b-4aac-a1b0-aba51ed6a1ee
 # ╠═81bafae5-e88d-41d7-9835-f92592a71e0e
-# ╠═3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
+# ╟─3a1c3f2e-7b7c-498b-9fac-beb6c89176f8
 # ╟─bc581a79-8649-4aa1-a604-5d5bee07ac13
 # ╠═58901914-fe97-4675-a11c-2f8c9d603c0f
 # ╟─db6e0b60-67b0-469d-b03c-1b4f966701af
