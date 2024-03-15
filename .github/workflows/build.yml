@@ -60,3 +60,11 @@ jobs:
           user-email: research@abdulrhmnghanem.tech
           target-directory: modeling-and-control-books-in-julia
           target-branch: main
+
+      - name: Update cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            .cache
+            .build
+          key: cache-pluto-${{ github.event.repository.updated_at }}

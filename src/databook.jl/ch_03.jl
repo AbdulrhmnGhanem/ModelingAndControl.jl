@@ -10,11 +10,11 @@ begin
     # If you are running this notebook as a stannalone notebook disable this cell.
     import Pkg
     Pkg.activate(joinpath("..", ".."))
-    data_path = joinpath("..", "..", "books", "databook", "DATA")
+    data_path = joinpath("..", "..", "books", "DATA")
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, LinearAlgebra, Plots, PlutoUI
+using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, PlutoUI
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -32,7 +32,42 @@ trends.
 "
 
 # ╔═╡ 1dd2f677-ce86-4292-940f-581a20ee258b
+function solve_one(resolutions, ratios)
+	A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
+	
+	errors = zeros(length(resolutions), length(ratios))
+	for (i, resolution) in enumerate(resolutions)
+		x_scale, y_scale = size(A) .÷ resolution  
+		A = A[1:x_scale:end, 1:y_scale:end]
+		B = fft(A)
+	 	B_abs = abs.(B)
+		B_abs_sorted = sort(B_abs[:])
 
+		for (j, ratio) in enumerate(ratios)
+			threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted))|>Int]
+			mask = B_abs .> threshold
+			coeffecients = B .* mask
+			compressed = real.(ifft(coeffecients))
+			errors[i, j] = norm(A - compressed)
+		end
+	end
+
+	plot(ratios, errors';
+		xlabel="Compression ratio",
+		ylabel="error",
+		labels=reshape(["$(x)x$y" for (x, y) in resolutions], 1, :),
+		legendtitle="Resolution",
+	)
+end
+
+# ╔═╡ b1274594-558b-47d8-8c66-b5fa7f6076df
+solve_one([[2000, 1500], [1000, 750],[500, 375], [200, 150],[100, 75]], logrange(0.001, 0.9, 10))
+
+# ╔═╡ b55f6990-88fe-4fd6-8827-c39e1adf6eb4
+md"
+!!! remark
+	The error decreases as the resolution decreases.
+"
 
 # ╔═╡ d4c32227-7f0b-4962-ba92-78df8978cd92
 md"## Exercise 3.2
@@ -137,6 +172,8 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╟─00f5bf70-27cd-47cb-af66-1963dea45fe5
 # ╟─2098bbc5-0f7d-4c83-85d1-88a55cb878e2
 # ╠═1dd2f677-ce86-4292-940f-581a20ee258b
+# ╟─b1274594-558b-47d8-8c66-b5fa7f6076df
+# ╟─b55f6990-88fe-4fd6-8827-c39e1adf6eb4
 # ╟─d4c32227-7f0b-4962-ba92-78df8978cd92
 # ╠═902809dc-675d-4e0b-80ac-d99d88ecc27d
 # ╟─38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
