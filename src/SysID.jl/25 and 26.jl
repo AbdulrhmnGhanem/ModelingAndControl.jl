@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.37
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
@@ -29,6 +29,11 @@ md"## Exercise 25 and 26: Generation of maximum length binary sequence
 Feedback configuration for generatinbg maximum length binary sequence.
 
 Reference: K. Godfrey, Perturbation Signals for System Identification. Prentice Hall, 1993.
+
+Returns a function that xor the feedback register data together
+for example, if n = 62, it is a function that returns
+
+state[3] ⊻ state[5] ⊻ state[6] ⊻ state[62]
 """
 function mlbs_fedback(n)
     forks = if n == 1
@@ -169,7 +174,7 @@ Maximum allowed order `n=62`.
 The signal switched between `dc` and `-dc`, defualt is binary levels: 1, 0.
 """
 function mlbs(n, dc = nothing)
-    maximum_length = begin
+    state = begin
         state = CircularBuffer{Bool}(n)
         # intialize the buffer to all zeros expect for the last one
         append!(state, zeros(n))

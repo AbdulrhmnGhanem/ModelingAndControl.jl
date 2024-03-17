@@ -112,6 +112,7 @@ begin
 		p2 = plot(Ns, fractions_inside;
 			xlabel="N",
 			ylabel="Fraction of darts inside",
+			legends=false,
 		)
 		plot(p1, p2;
 			layout=(2,1),
