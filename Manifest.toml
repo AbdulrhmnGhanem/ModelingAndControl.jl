@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "0a299d4802664be37fd9b1cc5a000bee79a74c1a"
+project_hash = "c9bf03175dfc3cb8bcabe118a61a905c3caa5410"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "41c37aa88889c171f1300ceac1313c06e891d245"
@@ -542,6 +542,7 @@ version = "7.13.0"
 [[deps.Distances]]
 deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
 git-tree-sha1 = "66c4c81f259586e8f002eacebc177e1fb06363b0"
+pinned = true
 uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 version = "0.10.11"
 weakdeps = ["ChainRulesCore", "SparseArrays"]

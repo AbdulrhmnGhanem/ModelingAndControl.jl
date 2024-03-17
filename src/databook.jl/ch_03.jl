@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions
+using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -72,47 +72,66 @@ md"
 # ╔═╡ d4c32227-7f0b-4962-ba92-78df8978cd92
 md"## Exercise 3.2
 
-This example will explore geometry and sampling probabilities in high-dimensional spaces. Consider a two-dimensional square dart board with length L = 2 on both sides and a circle of radius R = 1 in the middle. Write a program to throw 10000 darts by generating a uniform random x and y position on the square. Compute the radius for each point and compute what fraction land inside the circle (i.e., how many have radius < 1). Is this consistent with your expectation based on the area of the circle and the square? Repeat this experiment, throwing 10 000 darts randomly (sampled from a uniform distribution) on an N-dimensional cube (length L = 2) with an N-dimensional sphere inside
-(radius R = 1), for N = 2 through N = 10. For a given N, what fraction of the points land inside the sphere. Plot this fraction versus N. Also compute the histogram of the radii of the randomly sampled points for each N and plot these. What trends do you notice in the data?
+This example will explore geometry and sampling probabilities in high-dimensional spaces. Consider a two-dimensional square dart board with length L = 2 on both sides and a circle of radius R = 1 in the middle. Write a program to throw 10000 darts by generating a uniform random x and y position on the square. Compute the radius for each point and compute what fraction land inside the circle (i.e., how many have radius < 1). Is this consistent with your expectation based on the area of the circle and the square? Repeat this experiment, throwing 10000 darts randomly (sampled from a uniform distribution) on an N-dimensional cube (length L = 2) with an N-dimensional sphere inside (radius R = 1), for N = 2 through N = 10. For a given N, what fraction of the points land inside the sphere. Plot this fraction versus N. Also compute the histogram of the radii of the randomly sampled points for each N and plot these. What trends do you notice in the data?
 "
 
 # ╔═╡ 902809dc-675d-4e0b-80ac-d99d88ecc27d
-function solve_two()
-	L = 2
-	R = 1
-	num_darts = 10_000
-	dist = Uniform(0, L)
-
-	darts = Vector{Matrix{Float64}}(undef, num_darts)
-	for i in 1:num_darts
-		darts[i]= rand(dist, 1, 2)		
-	end
-
-	distance(p) = sqrt((p[1] - 1)^2 + (p[2] - 1)^2)
-	fraction_of_darts_inside_circle =  num_darts / length(filter(d -> d .< R, map(distance, darts)))
-	fraction_of_area = L^2 / π*R^2
+begin
+	function solve_two()
+		L = 2
+		R = 1
+		Ns = 2:10
+		num_darts = 10_000
+		dist = Uniform(0, L)
 	
-	@assert round(fraction_of_area;digits=1) == round(fraction_of_darts_inside_circle; digits=1)
-
-	scatter([d[1] for d in darts], [d[2] for d in darts];
-		size=(900, 900),
-		legend=false,
-	)
-	function circle(h, k, r)
-		θ = LinRange(0, 2π, 500)
-		h .+ r * sin.(θ), k .+ r * cos.(θ)
+		fractions = []
+		radiis = []
+		for n in Ns
+			darts = Vector{Matrix{Float64}}(undef, num_darts)
+			for i in 1:num_darts
+				darts[i] = rand(dist, 1, n)	
+			end
+			distance(p) = euclidean(vec(p), ones(n))
+			radii = map(distance, darts)
+			fractions_inside = length(filter(d -> d .< R, radii)) / num_darts
+			push!(radiis, radii)
+			push!(fractions, fractions_inside)
+		end
+		area_ratio =  π*R^2 / L^2
+		Ns, fractions, radiis, area_ratio
 	end
-	plot!(circle(1, 1, R);
-		seriestype=[:shape],
-		fillalpha=0.5,
-		aspect_ratio=1,
-	)
-
-	# Continue the rest of the exercise.
+	
+	function plot_two(Ns, fractions_inside, radiis)
+		p1 = histogram(radiis;
+			xlabel="Radius",
+			ylabel="Count",
+			legendtitle="N",
+			labels=reshape(2:10, 1, :),
+			fillalpha=0.7,
+		)
+		p2 = plot(Ns, fractions_inside;
+			xlabel="N",
+			ylabel="Fraction of darts inside",
+		)
+		plot(p1, p2;
+			layout=(2,1),
+			size=(800, 800),
+		)
+	end
 end
 
 # ╔═╡ 61953b78-378e-4127-86f6-3ad4afc2c4bc
-solve_two()
+begin
+	Ns, fractions_inside, radiis, area_ratio = solve_two()
+	md"
+The area ratio = $(round(area_ratio; digits=4))
+	
+The fraction of darts inside = $(round(fractions_inside[1]; digits=4))
+"
+end
+
+# ╔═╡ c6e556d5-27c8-41b1-a60d-c167b6bbf97d
+plot_two(Ns, fractions_inside, radiis)
 
 # ╔═╡ 38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 md"## Exercise 3.3
@@ -212,6 +231,7 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╟─d4c32227-7f0b-4962-ba92-78df8978cd92
 # ╠═902809dc-675d-4e0b-80ac-d99d88ecc27d
 # ╟─61953b78-378e-4127-86f6-3ad4afc2c4bc
+# ╟─c6e556d5-27c8-41b1-a60d-c167b6bbf97d
 # ╟─38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 # ╠═7265beb5-13af-4afa-ac7d-604029b9ff85
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e
