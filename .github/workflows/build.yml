@@ -60,10 +60,15 @@ jobs:
           target-directory: modeling-and-control-books-in-julia
           target-branch: main
 
+      - name: Delete old cache
+        run: gh cache delete cache-pluto
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update cache
         uses: actions/cache/save@v3
         with:
           path: |
             .cache
             .build
-          key: cache-pluto-${{ github.event.repository.updated_at }}
+          key: cache-pluto
