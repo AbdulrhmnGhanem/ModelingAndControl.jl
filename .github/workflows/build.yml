@@ -61,7 +61,7 @@ jobs:
           target-branch: main
 
       - name: Delete old cache
-        run: gh cache delete cache-pluto
+        run: gh cache delete cache-pluto || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
