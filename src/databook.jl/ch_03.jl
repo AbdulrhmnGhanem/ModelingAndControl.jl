@@ -137,10 +137,10 @@ plot_two(Ns, fractions_inside, radiis)
 # ╔═╡ 38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 md"## Exercise 3.3
 
-This exercise will explore the relationship between the sparsity K, the signal
-size n, and the number of samples p in compressed sensing.
+This exercise will explore the relationship between the sparsity _K_, the signal
+size _n_, and the number of samples _p_ in compressed sensing.
 
-1. For n = 1000 and _K_ = 5, create a _K_-sparse vector **s** of Fourier coefficients in a Fourier basis Ψ. For each p from 1 to 100, create a Gaussian random sampling matrix C ∈ Rp×n to create a measurement vector y = **CΨs**. Use compressed sensing based on this measurement to estimate $\hat s$. For each p, repeat this with at least 10 realizations of the random measurement matrix C. Plot the average relative error of $||\hat s - s||_2 / ||s||$ versus p; it may be helpful to visualize the errors with a box-and- whisker plot. Explain the trends. Also plot the average $l_1$ and $l_0$ error versus p.
+1. For _n_ = 1000 and _K_ = 5, create a _K_-sparse vector **s** of Fourier coefficients in a Fourier basis **Ψ**. For each _p_ from 1 to 100, create a Gaussian random sampling matrix $\textbf{C} \in \mathcal{R}^{p \times n}$ to create a measurement vector y = **CΨs**. Use compressed sensing based on this measurement to estimate $\hat s$. For each p, repeat this with at least 10 realizations of the random measurement matrix **C**. Plot the average relative error of $||\hat s - s||_2 / ||s||$ versus p; it may be helpful to visualize the errors with a box-and- whisker plot. Explain the trends. Also plot the average $\mathcal{l}_1$ and $\mathcal{l}_0$ error versus p.
 
 2. Repeat the above experiment for K = 1 through K = 20. What changes?
 
@@ -232,7 +232,7 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╟─d4c32227-7f0b-4962-ba92-78df8978cd92
 # ╠═902809dc-675d-4e0b-80ac-d99d88ecc27d
 # ╟─61953b78-378e-4127-86f6-3ad4afc2c4bc
-# ╟─c6e556d5-27c8-41b1-a60d-c167b6bbf97d
+# ╠═c6e556d5-27c8-41b1-a60d-c167b6bbf97d
 # ╟─38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 # ╠═7265beb5-13af-4afa-ac7d-604029b9ff85
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e

@@ -13,6 +13,9 @@ begin
     data_path = joinpath("..", "..", "books", "databook", "DATA")
 end;
 
+# ╔═╡ 513a0cbb-6af4-47a7-819f-52f74ded57b3
+using LsqFit, Plots, Interpolations
+
 # ╔═╡ 5504ba02-95f9-45a0-896d-edf3a1e11585
 md"# Chapter 4 - Regression and Model Selection"
 
@@ -47,7 +50,49 @@ Evaluate the resulting fit as a function of the initial guess for the values of 
 "
 
 # ╔═╡ c9127143-25df-4d93-aa6c-fd57fd3b029d
+begin
+	function solve_two()
+		x = 1:24
+		y = [75, 77, 76, 73, 69, 68, 63, 59, 57, 55, 54, 52, 50, 50, 49, 49, 49, 50, 54, 56, 59, 63, 67, 72]
+		
+		model(x, p) = p[1] * x.^2 .+ p[2] * x .+ p[3]
+		p0 = [0.0, 50.0, 25.0]
+		fit = curve_fit(model, x, y, p0)
+		A, B, C = fit.param
+		f(x) = A * x^2 + B * x + C
+		f, x, y, sqrt(sum(abs2.(f.(x) - y)) / 2)
+	end
+	
+	function plot_two(sol)
+		f, x, y, e₂ = sol
+		
+		scatter(x, y;
+			label="y",
+		)
+		plot!(f, 1, 26;
+			label="fitted curve",
+		)
+		plot!(x, y;
+			label="linear interpolation",
+			ls=:dash
+		)
+		plot!(x, interpolate(y, BSpline(Quadratic(Reflect(OnGrid()))));
+			label="quadratic interpolation",
+			ls=:dashdot,
+			leg=:top,
+			
+		)
+	end
+end
 
+# ╔═╡ ab98068e-d2d0-40d4-a763-da86a6ffec96
+begin
+	sol_two = solve_two()
+	md"E₂ = $(sol_two[end])"
+end
+
+# ╔═╡ 723cdee8-b566-42f0-9107-5af3868396d7
+plot_two(sol_two)
 
 # ╔═╡ f1a6de55-221e-413e-bd1d-2cf4715e3b67
 md"## Exercise 4.3
@@ -91,11 +136,14 @@ heuristics or empirical rules for this. Be sure to visualize the results from **
 
 # ╔═╡ Cell order:
 # ╠═8921706e-dd46-11ee-06f4-8de991020711
+# ╠═513a0cbb-6af4-47a7-819f-52f74ded57b3
 # ╟─5504ba02-95f9-45a0-896d-edf3a1e11585
 # ╟─bbf81c22-a7c4-4a16-ad4f-3563e72abad8
 # ╠═5c834ba4-b3de-44d5-838a-eba0c5c7e6da
 # ╟─b01ecc30-b29c-40c8-a59c-d2159440f651
 # ╠═c9127143-25df-4d93-aa6c-fd57fd3b029d
+# ╟─ab98068e-d2d0-40d4-a763-da86a6ffec96
+# ╟─723cdee8-b566-42f0-9107-5af3868396d7
 # ╟─f1a6de55-221e-413e-bd1d-2cf4715e3b67
 # ╠═5cb3fe75-fb66-4862-a769-c4a067933221
 # ╟─4934d12b-f6d1-45a8-8b0a-fc5bfc8162a9

@@ -24,6 +24,7 @@ begin
 end;
 
 # ╔═╡ d7a6d9ba-066d-4214-aabc-13c9124389ab
+# ╠═╡ show_logs = false
 using FileIO, LinearAlgebra, ImageShow, ImageCore, Plots, MAT, StatsBase, StatsPlots, Compat, PlutoUI
 
 # ╔═╡ 1c78d592-8b55-4171-b116-9afb4e7f9d25
@@ -448,6 +449,9 @@ begin
 	end
 end
 
+# ╔═╡ 4476ca35-590b-448d-848e-2f4bcdcb229f
+
+
 # ╔═╡ 436c13d6-1bc1-442c-bd54-e95586294bd9
 plot_six(solve_six())
 
@@ -518,6 +522,7 @@ $W' \approx AW$
 # ╟─a452e424-2c3c-4606-abae-f841dad6b46a
 # ╟─93cced67-e8ae-4a76-a38e-9a996bdb25df
 # ╠═bf245148-4bda-4bc2-ba8e-15fd0d416c07
+# ╠═4476ca35-590b-448d-848e-2f4bcdcb229f
 # ╟─436c13d6-1bc1-442c-bd54-e95586294bd9
 # ╟─adb59fde-27e8-474c-a8c5-49eca0125d4f
 # ╠═9962945b-6dc2-4978-bf63-3a6c75e106dd
