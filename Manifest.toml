@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "baa7e1db61c7e63e7e81e5dcb2ed4e9818f6777b"
+project_hash = "2f442a57b33ebf8787fb562502f354799706ed3f"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -1896,6 +1896,7 @@ version = "0.5.5+0"
 [[deps.Optim]]
 deps = ["Compat", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "Parameters", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
 git-tree-sha1 = "d9b79c4eed437421ac4285148fcadf42e0700e89"
+pinned = true
 uuid = "429524aa-4258-5aef-a3af-852621145aeb"
 version = "1.9.4"
 
