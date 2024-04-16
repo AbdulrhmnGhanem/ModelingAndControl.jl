@@ -21,11 +21,12 @@ begin
     import Pkg
     Pkg.activate(joinpath("..", ".."))
     data_path = joinpath("..", "..", "books", "databook", "DATA")
+	ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 end;
 
 # ╔═╡ 513a0cbb-6af4-47a7-819f-52f74ded57b3
 # ╠═╡ show_logs = false
-using LsqFit, Plots, Interpolations, Optim, PlutoUI, StatsBase
+using LsqFit, Plots, Interpolations, Optim, PlutoUI, StatsBase, MLDatasets, Metrics
 
 # ╔═╡ 5504ba02-95f9-45a0-896d-edf3a1e11585
 md"# Chapter 4 - Regression and Model Selection"
@@ -62,7 +63,7 @@ Evaluate the resulting fit as a function of the initial guess for the values of 
 
 # ╔═╡ c9127143-25df-4d93-aa6c-fd57fd3b029d
 begin
-	E₂(y, ŷ) = round(sqrt(sum(abs2.(y - ŷ)) / 2); digits=3)
+	E₂(y, ŷ) = round(Metrics.mse(ŷ, y); digits=3)
 	function solve_two()
 		x = 1:24
 		y = [75, 77, 76, 73, 69, 68, 63, 59, 57, 55, 54, 52, 50, 50, 49, 49, 49, 50, 54, 56, 59, 63, 67, 72]
@@ -121,21 +122,21 @@ where the loadings $α_k$ are to be determined by four regression techniques: le
 begin
 	function lasso_objective(p, model, x, y, λ)
 	    ŷ = model(x, p)
-	    mse_loss = sum((ŷ .- y).^2) / length(y)
+	    mse_loss = Metrics.mse(ŷ, y)
 	    l1_penalty = λ * sum(abs, p)
 	    return mse_loss + l1_penalty
 	end
 
 	function ridge_objective(p, model, x, y, λ)
 	    ŷ = model(x, p)
-	    mse_loss = sum((ŷ .- y).^2) / length(y)
+	 	mse_loss = Metrics.mse(ŷ, y)
 	    l2_penalty = λ * sqrt(sum(p .^ 2))
 	    return mse_loss + l2_penalty
 	end
 
 	function elastic_objective(p, model, x, y, λ)
 		ŷ = model(x, p)
-	    mse_loss = sum((ŷ .- y).^2) / length(y)
+	  	mse_loss = Metrics.mse(ŷ, y)
 	    l2_penalty = λ * sqrt(sum(p .^ 2))
 	    l1_penalty = λ * sum(abs, p)
 	    return mse_loss + l2_penalty + l1_penalty
@@ -292,7 +293,38 @@ heuristics or empirical rules for this. Be sure to visualize the results from **
 "
 
 # ╔═╡ 57172e34-146f-4930-ba78-9285f5f5f7f7
+begin
+	function solve_four()
+		data = MNIST(:train)
+		A = reshape(data.features, (28*28, 60000))'
+		B = indicatormat(data.targets)'
+		X_ols = A \ B
 
+		# λ = 0.1
+		# model(x, p) = x * p # model -> B, x -> A, p -> x, we are optimizing x
+ 		# p0 = X_ols	
+
+		# a single iteration of this optimization problem takes 6 minutes
+		# I don't know what I am doing wrong.
+		# X_lasso = optimize(
+	 #        p -> lasso_objective(p, model, A, B, λ),
+	 #        p0,
+	 #        NelderMead(),
+	 #        Optim.Options(iterations=1, show_trace=true),
+	 #    ) |> Optim.minimizer
+
+		A_test = reshape(MNIST(:test).features, (28*28, 10000))
+		B_test_ols = A * X_ols
+		results_ols = map(r -> findmax(r)[2] - 1, eachrow(B_test_ols))
+		
+		targets = MNIST(:test).targets
+		
+		(1 - (count(i -> targets[i] != results_ols[i], 1:length(targets)) / length(targets))) * 100
+	end
+end
+
+# ╔═╡ 8f9ee757-6783-4945-9746-541c31b6e0cf
+solve_four()
 
 # ╔═╡ Cell order:
 # ╠═8921706e-dd46-11ee-06f4-8de991020711
@@ -313,3 +345,4 @@ heuristics or empirical rules for this. Be sure to visualize the results from **
 # ╟─aa68a8ef-a08d-4f2a-b780-faa6743be03f
 # ╟─4934d12b-f6d1-45a8-8b0a-fc5bfc8162a9
 # ╠═57172e34-146f-4930-ba78-9285f5f5f7f7
+# ╠═8f9ee757-6783-4945-9746-541c31b6e0cf
