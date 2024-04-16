@@ -319,8 +319,9 @@ heuristics or empirical rules for this. Be sure to visualize the results from **
 begin
 	function solve_four()
 		data = MNIST(:train)
-		A = reshape(data.features, (28*28, 60000))'
+		A = reshape(data.features, (60000, 28*28))
 		B = indicatormat(data.targets)'
+		size(A,), size(B)
 		X_ols = A \ B
 
 		# λ = 0.1
@@ -336,18 +337,18 @@ begin
 	 #        Optim.Options(iterations=1, show_trace=true),
 	 #    ) |> Optim.minimizer
 
-		A_test = reshape(MNIST(:test).features, (28*28, 10000))
-		B_test_ols = A * X_ols
+		A_test = reshape(MNIST(:test).features, (10000, 28*28))
+		B_test_ols = A_test * X_ols
 		results_ols = map(r -> findmax(r)[2] - 1, eachrow(B_test_ols))
 		
 		targets = MNIST(:test).targets
 		
-		(1 - (count(i -> targets[i] != results_ols[i], 1:length(targets)) / length(targets))) * 100
+		(count(i -> targets[i] != results_ols[i], 1:length(targets)) / length(targets))
 	end
 end
 
 # ╔═╡ 8f9ee757-6783-4945-9746-541c31b6e0cf
-solve_four()
+md"Accuracy: $(solve_four() * 100)%"
 
 # ╔═╡ Cell order:
 # ╠═8921706e-dd46-11ee-06f4-8de991020711
