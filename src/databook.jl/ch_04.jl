@@ -39,7 +39,30 @@ regression to a parabolic fit $f(x) = Ax^2 + Bx + C$.
 "
 
 # ╔═╡ 5c834ba4-b3de-44d5-838a-eba0c5c7e6da
+md"
+$f(x) = Ax^2 + Bx + C$
+$E_2(f) = \sum_{k=1}^n|f(x_k) - y_k|^2 = \sum_{k=1}^n(Ax^2 + Bx + C - y_k)^2$
+$\frac{\partial E_2}{\partial A}: 2\sum_{k=1}^n(Ax^2+Bx+c-y_k)x_k^2 = 0$
+$\frac{\partial E_2}{\partial B}: 2\sum_{k=1}^n(Ax^2+Bx+c-y_k)x_k = 0$
+$\frac{\partial E_2}{\partial C}: 2\sum_{k=1}^n(Ax^2+Bx+c-y_k) = 0$
 
+$\begin{pmatrix}
+\sum_{k=1}^n x_k^4 & \sum_{k=1}^n x_k^3 & \sum_{k=1}^n x_k^2\\
+\sum_{k=1}^n x_k^3 & \sum_{k=1}^n x_k^2 & \sum_{k=1}^n x_k \\
+\sum_{k=1}^n x_k^2 & \sum_{k=1}^n x_k & n
+\end{pmatrix}
+
+\begin{pmatrix}
+A\\
+B \\
+C
+\end{pmatrix} = 
+\begin{pmatrix}
+\sum_{k=1}^n y_k x^2_k\\
+\sum_{k=1}^n y_k x_k\\
+\sum_{k=1}^n y_k
+\end{pmatrix}$
+"
 
 # ╔═╡ b01ecc30-b29c-40c8-a59c-d2159440f651
 md"## Exercise 4.2
@@ -331,7 +354,7 @@ solve_four()
 # ╠═513a0cbb-6af4-47a7-819f-52f74ded57b3
 # ╟─5504ba02-95f9-45a0-896d-edf3a1e11585
 # ╟─bbf81c22-a7c4-4a16-ad4f-3563e72abad8
-# ╠═5c834ba4-b3de-44d5-838a-eba0c5c7e6da
+# ╟─5c834ba4-b3de-44d5-838a-eba0c5c7e6da
 # ╟─b01ecc30-b29c-40c8-a59c-d2159440f651
 # ╠═c9127143-25df-4d93-aa6c-fd57fd3b029d
 # ╟─ab98068e-d2d0-40d4-a763-da86a6ffec96
