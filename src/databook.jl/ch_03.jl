@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances
+using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances, JuMP, Optim, StatsPlots, Distributions
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -33,35 +33,35 @@ trends.
 
 # ╔═╡ 1dd2f677-ce86-4292-940f-581a20ee258b
 function solve_one(resolutions, ratios)
-	A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
-	
-	errors = zeros(length(resolutions), length(ratios))
-	for (i, resolution) in enumerate(resolutions)
-		x_scale, y_scale = size(A) .÷ resolution  
-		A = A[1:x_scale:end, 1:y_scale:end]
-		B = fft(A)
-	 	B_abs = abs.(B)
-		B_abs_sorted = sort(B_abs[:])
+    A = joinpath(data_path, "dog.jpg") |> load .|> Gray |> channelview |> float
 
-		for (j, ratio) in enumerate(ratios)
-			threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted))|>Int]
-			mask = B_abs .> threshold
-			coeffecients = B .* mask
-			compressed = real.(ifft(coeffecients))
-			errors[i, j] = norm(A - compressed)
-		end
-	end
+    errors = zeros(length(resolutions), length(ratios))
+    for (i, resolution) in enumerate(resolutions)
+        x_scale, y_scale = size(A) .÷ resolution
+        A = A[1:x_scale:end, 1:y_scale:end]
+        B = fft(A)
+        B_abs = abs.(B)
+        B_abs_sorted = sort(B_abs[:])
 
-	plot(ratios, errors';
-		xlabel="Compression ratio",
-		ylabel="error",
-		labels=reshape(["$(x)x$y" for (x, y) in resolutions], 1, :),
-		legendtitle="Resolution",
-	)
+        for (j, ratio) in enumerate(ratios)
+            threshold = B_abs_sorted[floor((1 - ratio) * length(B_abs_sorted))|>Int]
+            mask = B_abs .> threshold
+            coeffecients = B .* mask
+            compressed = real.(ifft(coeffecients))
+            errors[i, j] = norm(A - compressed)
+        end
+    end
+
+    plot(ratios, errors';
+        xlabel="Compression ratio",
+        ylabel="error",
+        labels=reshape(["$(x)x$y" for (x, y) in resolutions], 1, :),
+        legendtitle="Resolution",
+    )
 end
 
 # ╔═╡ b1274594-558b-47d8-8c66-b5fa7f6076df
-solve_one([[2000, 1500], [1000, 750],[500, 375], [200, 150],[100, 75]], logrange(0.001, 0.9, 10))
+solve_one([[2000, 1500], [1000, 750], [500, 375], [200, 150], [100, 75]], logrange(0.001, 0.9, 10))
 
 # ╔═╡ b55f6990-88fe-4fd6-8827-c39e1adf6eb4
 md"
@@ -77,62 +77,77 @@ This example will explore geometry and sampling probabilities in high-dimensiona
 
 # ╔═╡ 902809dc-675d-4e0b-80ac-d99d88ecc27d
 begin
-	function solve_two()
-		L = 2
-		R = 1
-		Ns = 2:10
-		num_darts = 10_000
-		dist = Uniform(0, L)
-	
-		fractions = []
-		radiis = []
-		for n in Ns
-			darts = Vector{Matrix{Float64}}(undef, num_darts)
-			for i in 1:num_darts
-				darts[i] = rand(dist, 1, n)	
-			end
-			distance(p) = euclidean(vec(p), ones(n))
-			radii = map(distance, darts)
-			fractions_inside = length(filter(d -> d .< R, radii)) / num_darts
-			push!(radiis, radii)
-			push!(fractions, fractions_inside)
-		end
-		area_ratio =  π*R^2 / L^2
-		Ns, fractions, radiis, area_ratio
-	end
-	
-	function plot_two(Ns, fractions_inside, radiis)
-		p1 = histogram(radiis;
-			xlabel="Radius",
-			ylabel="Count",
-			legendtitle="N",
-			labels=reshape(2:10, 1, :),
-			fillalpha=0.7,
-		)
-		p2 = plot(Ns, fractions_inside;
-			xlabel="N",
-			ylabel="Fraction of darts inside",
-			legends=false,
-		)
-		plot(p1, p2;
-			layout=(2,1),
-			size=(800, 800),
-		)
-	end
+    function solve_two()
+        L = 2
+        R = 1
+        Ns = 2:10
+        num_darts = 10_000
+        dist = Uniform(0, L)
+
+        fractions = []
+        radiis = []
+        for n in Ns
+            darts = Vector{Matrix{Float64}}(undef, num_darts)
+            for i in 1:num_darts
+                darts[i] = rand(dist, 1, n)
+            end
+            distance(p) = euclidean(vec(p), ones(n))
+            radii = map(distance, darts)
+            fractions_inside = length(filter(d -> d .< R, radii)) / num_darts
+            push!(radiis, radii)
+            push!(fractions, fractions_inside)
+        end
+        area_ratio = π * R^2 / L^2
+        Ns, fractions, radiis, area_ratio
+    end
+
+    function plot_two(Ns, fractions_inside, radiis)
+        p1 = histogram(radiis;
+            xlabel="Radius",
+            ylabel="Count",
+            legendtitle="N",
+            labels=reshape(2:10, 1, :),
+            fillalpha=0.7,
+        )
+        p2 = plot(Ns, fractions_inside;
+            xlabel="N",
+            ylabel="Fraction of darts inside",
+            legends=false,
+        )
+        plot(p1, p2;
+            layout=(2, 1),
+            size=(800, 800),
+        )
+    end
 end
 
 # ╔═╡ 61953b78-378e-4127-86f6-3ad4afc2c4bc
 begin
-	Ns, fractions_inside, radiis, area_ratio = solve_two()
-	md"
-The area ratio = $(round(area_ratio; digits=4))
-	
-The fraction of darts inside = $(round(fractions_inside[1]; digits=4))
-"
+    Ns, fractions_inside, radiis, area_ratio = solve_two()
+    md"
+   The area ratio = $(round(area_ratio; digits=4))
+   	
+   The fraction of darts inside = $(round(fractions_inside[1]; digits=4))
+   "
 end
 
 # ╔═╡ c6e556d5-27c8-41b1-a60d-c167b6bbf97d
 plot_two(Ns, fractions_inside, radiis)
+
+# ╔═╡ 78bafda2-6465-4df9-b652-6e35f956548d
+begin
+    function build_and_test_dftmtx()
+        """A 2d discreate fourier transform matrix"""
+        function dftmtx(N)
+            fft(Matrix{ComplexF64}(I, N, N), 2)
+        end
+        x = [1, 2, 3, 0, 3]
+        @assert all(dftmtx(5) * x .≈ fft(x))
+        dftmtx
+    end
+    dftmtx = build_and_test_dftmtx()
+    heatmap(real.(dftmtx(200)), c=:inferno, color=:black, title="DFT Matrix Ψ")
+end
 
 # ╔═╡ 38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 md"## Exercise 3.3
@@ -148,7 +163,156 @@ size _n_, and the number of samples _p_ in compressed sensing.
 "
 
 # ╔═╡ 7265beb5-13af-4afa-ac7d-604029b9ff85
+function solve_three()
+    n = 1000
+    k = 5
+    Ψ = dftmtx(n)
+    s = zeros(ComplexF64, n)
+    non_zero_indices = sample(1:n, k, replace=false)
+    s[non_zero_indices] .= 1
 
+    num_of_selection = 100
+    num_of_realizations = 10
+    step = 10
+    
+	errs = zeros(num_of_selection ÷ step, num_of_realizations)
+	l₀= similar(errs)
+	l₁ = similar(errs)
+	
+    for (j, p) in collect(enumerate(1:step:num_of_selection))
+        Threads.@threads for i in 1:num_of_realizations
+            C = randn(p, n)
+            y = C * Ψ * s
+            model = Model(Optim.Optimizer)
+            @variable(model, s_L1[1:n])
+            @objective(model, Min, sum(abs.(s_L1)))
+            @constraint(model, C * Ψ * s_L1 .== y)
+            optimize!(model)
+            ŝ = value.(s_L1)
+			l₀[j, i] = norm(ŝ, 0)
+			l₁[j, i] = norm(ŝ, 1)
+            errs[j, i] = norm(ŝ - s) / norm(s, 1)
+        end
+    end
+	
+	errs2 = zeros(20, num_of_realizations)
+	l₀2= similar(errs2)
+	l₁2 = similar(errs2)
+	
+	for (j, k) in collect(enumerate(1:20))
+		Threads.@threads for i in 1:num_of_realizations
+			s = zeros(ComplexF64, n)
+    		non_zero_indices = sample(1:n, k, replace=false)
+    		s[non_zero_indices] .= 1
+
+			C = randn(10, n)
+			y = C * Ψ * s
+
+			model = Model(Optim.Optimizer)
+            @variable(model, s_L1[1:n])
+            @objective(model, Min, sum(abs.(s_L1)))
+            @constraint(model, C * Ψ * s_L1 .== y)
+            optimize!(model)
+            ŝ = value.(s_L1)
+			l₀2[j, i] = norm(ŝ, 0)
+			l₁2[j, i] = norm(ŝ, 1)
+            errs2[j, i] = norm(ŝ - s) / norm(s, 1)
+		end
+	end
+
+	ns = [100, 500, 1000, 2000, 5000]
+	errs3 = zeros(length(ns), num_of_realizations)
+	l₀3= similar(errs3)
+	l₁3 = similar(errs3)
+	
+	for (j, n) in collect(enumerate(ns))
+		k = 5
+		Ψ = dftmtx(n)
+		s = zeros(ComplexF64, n)
+		non_zero_indices = sample(1:n, k, replace=false)
+		s[non_zero_indices] .= 1
+
+		Threads.@threads for i in 1:num_of_realizations
+			C = randn(10, n)
+			y = C * Ψ * s
+
+			model = Model(Optim.Optimizer)
+            @variable(model, s_L1[1:n])
+            @objective(model, Min, sum(abs.(s_L1)))
+            @constraint(model, C * Ψ * s_L1 .== y)
+            optimize!(model)
+            ŝ = value.(s_L1)
+			l₀3[j, i] = norm(ŝ, 0)
+			l₁3[j, i] = norm(ŝ, 1)
+            errs3[j, i] = norm(ŝ - s) / norm(s, 1)
+		end
+	end
+    errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3
+end
+
+# ╔═╡ 0077bafb-2beb-4743-a1f1-88b54d345058
+function plot_three(sol)
+	errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3 = sol
+	p1 = boxplot(1:10:100, errs';
+		legend=false,
+		title="ẽ",
+		xlabel="p"
+	)
+	p2 = boxplot(1:10:100, l₀';
+		legend=false,
+		title="L₀",
+		xlabel="p",
+		ylims=(0, 1001),
+	)
+		
+	p3 = boxplot(1:10:100, l₁';
+		legend=false,
+		title="L₁",
+		xlabel="p",
+	)
+	
+	p4 = boxplot(errs2';
+		legend=false,
+		title="ẽ",
+		xlabel="k",
+	)
+	p5 = boxplot(l₀2';
+		legend=false,
+		title="L₀",
+		xlabel="k",
+		ylims=(0, 1001),
+	)
+	p6 = boxplot(l₁2';
+		legend=false,
+		title="L₁",
+		xlabel="k",
+	)
+
+	p7 = boxplot(errs3';
+		legend=false,
+		xlabel="n",
+		title="ẽ",
+	)
+	p8 = boxplot(l₀3';
+		legend=false,
+		title="L₀",
+		xlabel="n",
+		ylims=(0, 1001),
+	)
+	p9 = boxplot(l₁3';
+		legend=false,
+		xlabel="n",
+		title="L₁",
+	)
+
+	plot(p1, p2, p3, p4, p5, p6, p7, p8, p9;
+		layout=(3, 3),
+		size=(600, 600)
+	)
+end
+
+# ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
+plot_three(solve_three())
 
 # ╔═╡ 01a25614-364d-473d-87dd-76f33174bb5e
 md"## Exercise 3.4
@@ -232,9 +396,12 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╟─d4c32227-7f0b-4962-ba92-78df8978cd92
 # ╠═902809dc-675d-4e0b-80ac-d99d88ecc27d
 # ╟─61953b78-378e-4127-86f6-3ad4afc2c4bc
-# ╠═c6e556d5-27c8-41b1-a60d-c167b6bbf97d
+# ╟─c6e556d5-27c8-41b1-a60d-c167b6bbf97d
+# ╠═78bafda2-6465-4df9-b652-6e35f956548d
 # ╟─38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
 # ╠═7265beb5-13af-4afa-ac7d-604029b9ff85
+# ╠═0077bafb-2beb-4743-a1f1-88b54d345058
+# ╠═56f955be-2dba-4080-8881-bfc66892a783
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e
 # ╠═77d4e06b-5dfd-4404-b1a5-195c5ba34b35
 # ╟─c2810938-988d-4558-9d61-271528ef024f
