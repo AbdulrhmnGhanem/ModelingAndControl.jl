@@ -334,10 +334,75 @@ plot_three(solve_three(Bernoulli()))
 
 # ╔═╡ c2810938-988d-4558-9d61-271528ef024f
 md"## Exercise 3.5
-Generate a DFT matrix ψ for n = 512.  We will use this as a basis for compressed sensing, and we will compute the incoherence of this basis and different measurement matrices. For p = 16, create different random measurement matrices **C** given by Gaussian random measurements, Bernoulli random measurements, and random single- pixel measurements. For each matrix, normalize the length of each row to 1. Now, for each measurement matrix type, compute the incoherence μ(**C, ψ**). Repeat this for many random instances of each C matrix type and compare the histogram of incoherence values for each matrix type. Further, compare the histogram of each inner product $\sqrt n (c_k, \psi_j)$ for each matrix type. Discuss any trends and the implications for compressed sensing with these measurement matrices. Are there other factors that are relevant for the sensing matrix?"
+Generate a DFT matrix ψ for n = 512.  We will use this as a basis for compressed sensing, and we will compute the incoherence of this basis and different measurement matrices. For p = 16, create different random measurement matrices **C** given by Gaussian random measurements, Bernoulli random measurements, and random single- pixel measurements. For each matrix, normalize the length of each row to 1. Now, for each measurement matrix type, compute the incoherence μ(**C, ψ**). Repeat this for many random instances of each C matrix type and compare the histogram of incoherence values for each matrix type. Further, compare the histogram of each inner product $\sqrt n \langle c_k, \psi_j \rangle$ for each matrix type. Discuss any trends and the implications for compressed sensing with these measurement matrices. Are there other factors that are relevant for the sensing matrix?
+
+##### the incoherence equation from the book
+$\mu(\mathbf{C}, \mathbf{\Psi}) = \sqrt{n} \max_{j,k} \left| \langle c_k, \psi_j \rangle \right|,$
+"
 
 # ╔═╡ ab49b66b-9744-4f39-894f-e5b1ab657336
+function solve_five()
+	normalize_row_length(m) = mapslices(r -> r ./ norm(r), m, dims=2)
+	μ(C, Ψ) = √n * maximum(abs.(map(m -> m[1]' * m[2], zip(eachrow(C), eachcol(Ψ)))))
+	
+	n = 512
+	p = 16
+	# normalize each col length in Ψ to 1
+	Ψ = dftmtx(n) |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
+	num_of_trials = 10_000 
+	incoherence = zeros(num_of_trials, 3)
+	for i in 1:num_of_trials
+		C₁ = randn(p, n) |> normalize_row_length # gaussian
+		C₂ = rand(Bernoulli(), p, n) |> normalize_row_length  # bernoulli
+		C₃ = zeros(p, n)
+		C₃[2, 2] = 1  # single pixel
+		
+		incoherence[i,1] = μ(C₁, Ψ)
+		incoherence[i,2] = μ(C₂, Ψ)
+		incoherence[i,3] = μ(C₃, Ψ)
+	end
+	incoherence
+end
 
+# ╔═╡ c2700784-253f-462d-a0db-2257b54e2202
+function plot_five(sol)
+	incoherence = sol
+
+	p1 = histogram(incoherence[:, 1];
+		title="Normal",
+		xlabel="μ",
+		ylabel="N",
+		
+	)
+	p2 = histogram(incoherence[:, 2];
+		title="Bernoulli",
+		xlabel="μ",
+		ylabel="N",
+	)
+	p3 = histogram(incoherence[:, 3];
+		title="Single pixel",
+		xlabel="μ",
+		ylabel="N",
+	)
+
+	plot(p1, p2, p3;
+		layout=(3, 1),
+		legend=false,
+	)
+end
+
+# ╔═╡ 19dc20eb-1e63-429e-aef0-bc29fedfed3c
+plot_five(solve_five())
+
+# ╔═╡ 5d9b91f0-c6da-43f4-af6f-95d7df6db2de
+md"
+!!! remark
+	- Choosing C with a normal distribution results in low coherence that has a distribtuion close to a beta distribution.
+	
+	- Choosing C with a bernoulli distribution lead to much higher incoherence with what looks like a mixture distribution.
+
+	- As expected choosing one pixel is the worst (high incoherence is desired for sparse representation).
+"
 
 # ╔═╡ 63e19dbb-5845-412f-91ad-26a8f89af46c
 md"## Exercise 3.6
@@ -413,11 +478,14 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╠═56f955be-2dba-4080-8881-bfc66892a783
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e
 # ╟─c2383726-826b-43d9-a670-9f9b84d1a292
-# ╠═5ad70bd1-0798-4a13-abe2-063cc66e8343
+# ╠═e8f85762-9018-4e3d-b6d1-66e555f9fb5d
 # ╟─3fcc4f34-2742-4364-a1b8-8e924423aca1
 # ╠═1de5daed-9ac7-4780-a276-9ff46ae396d7
-# ╟─c2810938-988d-4558-9d61-271528ef024f
+# ╠═c2810938-988d-4558-9d61-271528ef024f
 # ╠═ab49b66b-9744-4f39-894f-e5b1ab657336
+# ╠═c2700784-253f-462d-a0db-2257b54e2202
+# ╟─19dc20eb-1e63-429e-aef0-bc29fedfed3c
+# ╟─5d9b91f0-c6da-43f4-af6f-95d7df6db2de
 # ╟─63e19dbb-5845-412f-91ad-26a8f89af46c
 # ╠═9ca403ad-95cd-4659-a7af-0e470fc3a034
 # ╟─2a95f1b3-fe43-4cc3-942d-1ea443b6515d
