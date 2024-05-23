@@ -163,7 +163,7 @@ size _n_, and the number of samples _p_ in compressed sensing.
 "
 
 # ╔═╡ 7265beb5-13af-4afa-ac7d-604029b9ff85
-function solve_three()
+function solve_three(distribution)
     n = 1000
     k = 5
     Ψ = dftmtx(n)
@@ -181,7 +181,7 @@ function solve_three()
 	
     for (j, p) in collect(enumerate(1:step:num_of_selection))
         Threads.@threads for i in 1:num_of_realizations
-            C = randn(p, n)
+            C = rand(distribution, p, n)
             y = C * Ψ * s
             model = Model(Optim.Optimizer)
             @variable(model, s_L1[1:n])
@@ -205,7 +205,7 @@ function solve_three()
     		non_zero_indices = sample(1:n, k, replace=false)
     		s[non_zero_indices] .= 1
 
-			C = randn(10, n)
+			C = rand(distribution, 10, n)
 			y = C * Ψ * s
 
 			model = Model(Optim.Optimizer)
@@ -233,7 +233,7 @@ function solve_three()
 		s[non_zero_indices] .= 1
 
 		Threads.@threads for i in 1:num_of_realizations
-			C = randn(10, n)
+			C = rand(distribution, 10, n)
 			y = C * Ψ * s
 
 			model = Model(Optim.Optimizer)
@@ -247,12 +247,12 @@ function solve_three()
             errs3[j, i] = norm(ŝ - s) / norm(s, 1)
 		end
 	end
-    errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3
+    errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3, ns
 end
 
 # ╔═╡ 0077bafb-2beb-4743-a1f1-88b54d345058
 function plot_three(sol)
-	errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3 = sol
+	errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3, ns = sol
 	p1 = boxplot(1:10:100, errs';
 		legend=false,
 		title="ẽ",
@@ -262,7 +262,6 @@ function plot_three(sol)
 		legend=false,
 		title="L₀",
 		xlabel="p",
-		ylims=(0, 1001),
 	)
 		
 	p3 = boxplot(1:10:100, l₁';
@@ -280,7 +279,6 @@ function plot_three(sol)
 		legend=false,
 		title="L₀",
 		xlabel="k",
-		ylims=(0, 1001),
 	)
 	p6 = boxplot(l₁2';
 		legend=false,
@@ -288,21 +286,23 @@ function plot_three(sol)
 		xlabel="k",
 	)
 
-	p7 = boxplot(errs3';
+	p7 = boxplot(ns', errs3';
 		legend=false,
 		xlabel="n",
 		title="ẽ",
+		xrotation=90,
 	)
-	p8 = boxplot(l₀3';
+	p8 = boxplot(ns', l₀3';
 		legend=false,
 		title="L₀",
 		xlabel="n",
-		ylims=(0, 1001),
+		xrotation=90,
 	)
-	p9 = boxplot(l₁3';
+	p9 = boxplot(ns', l₁3';
 		legend=false,
 		xlabel="n",
 		title="L₁",
+		xrotation=90,
 	)
 
 	plot(p1, p2, p3, p4, p5, p6, p7, p8, p9;
@@ -312,7 +312,7 @@ function plot_three(sol)
 end
 
 # ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
-plot_three(solve_three())
+plot_three(solve_three(Normal()))
 
 # ╔═╡ 01a25614-364d-473d-87dd-76f33174bb5e
 md"## Exercise 3.4
@@ -320,8 +320,17 @@ md"## Exercise 3.4
 Repeat the above exercise with a uniformly sampled random sample matrix. Also repeat with a Bernoulli random matrix and a matrix that comprises random single pixels. Plot the average relative errors for these different sampling matrices on the same plot (including the plot for Gaussian random sampling). Discuss the trends.
 "
 
-# ╔═╡ 77d4e06b-5dfd-4404-b1a5-195c5ba34b35
+# ╔═╡ c2383726-826b-43d9-a670-9f9b84d1a292
+md"### unifromly distributed sample matrix"
 
+# ╔═╡ 5ad70bd1-0798-4a13-abe2-063cc66e8343
+plot_three(solve_three(Uniform()))
+
+# ╔═╡ 3fcc4f34-2742-4364-a1b8-8e924423aca1
+md"### Bernoulli distributed sample matrix"
+
+# ╔═╡ 1de5daed-9ac7-4780-a276-9ff46ae396d7
+plot_three(solve_three(Bernoulli()))
 
 # ╔═╡ c2810938-988d-4558-9d61-271528ef024f
 md"## Exercise 3.5
@@ -403,7 +412,10 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╠═0077bafb-2beb-4743-a1f1-88b54d345058
 # ╠═56f955be-2dba-4080-8881-bfc66892a783
 # ╟─01a25614-364d-473d-87dd-76f33174bb5e
-# ╠═77d4e06b-5dfd-4404-b1a5-195c5ba34b35
+# ╟─c2383726-826b-43d9-a670-9f9b84d1a292
+# ╠═5ad70bd1-0798-4a13-abe2-063cc66e8343
+# ╟─3fcc4f34-2742-4364-a1b8-8e924423aca1
+# ╠═1de5daed-9ac7-4780-a276-9ff46ae396d7
 # ╟─c2810938-988d-4558-9d61-271528ef024f
 # ╠═ab49b66b-9744-4f39-894f-e5b1ab657336
 # ╟─63e19dbb-5845-412f-91ad-26a8f89af46c
