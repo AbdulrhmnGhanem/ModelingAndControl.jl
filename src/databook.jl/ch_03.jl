@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances, JuMP, Optim, StatsPlots, Distributions
+using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances, JuMP, Optim, StatsPlots, Distributions, MAT, SparseArrays
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -137,7 +137,7 @@ plot_two(Ns, fractions_inside, radiis)
 # ╔═╡ 78bafda2-6465-4df9-b652-6e35f956548d
 begin
     function build_and_test_dftmtx()
-        """A 2d discreate fourier transform matrix"""
+        """A 2d discrete fourier transform matrix"""
         function dftmtx(N)
             fft(Matrix{ComplexF64}(I, N, N), 2)
         end
@@ -312,7 +312,10 @@ function plot_three(sol)
 end
 
 # ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
+# ╠═╡ disabled = true
+#=╠═╡
 plot_three(solve_three(Normal()))
+  ╠═╡ =#
 
 # ╔═╡ 01a25614-364d-473d-87dd-76f33174bb5e
 md"## Exercise 3.4
@@ -323,14 +326,16 @@ Repeat the above exercise with a uniformly sampled random sample matrix. Also re
 # ╔═╡ c2383726-826b-43d9-a670-9f9b84d1a292
 md"### unifromly distributed sample matrix"
 
-# ╔═╡ 5ad70bd1-0798-4a13-abe2-063cc66e8343
+# ╔═╡ e8f85762-9018-4e3d-b6d1-66e555f9fb5d
 plot_three(solve_three(Uniform()))
 
 # ╔═╡ 3fcc4f34-2742-4364-a1b8-8e924423aca1
 md"### Bernoulli distributed sample matrix"
 
 # ╔═╡ 1de5daed-9ac7-4780-a276-9ff46ae396d7
+#=╠═╡
 plot_three(solve_three(Bernoulli()))
+  ╠═╡ =#
 
 # ╔═╡ c2810938-988d-4558-9d61-271528ef024f
 md"## Exercise 3.5
@@ -409,8 +414,38 @@ md"## Exercise 3.6
 This exercise will explore sparse representation from Section 3.6 to estimate a fluid flow field, following Callaham et al. [146]. Load the cylinder flow data set. Coarsen each flow field by a factor of 20 in each direction using imresize, and build a library of these coarsened measurements (i.e., a matrix, where each column contains these downsampled measurements). Plot a movie of the flow field in these new coordinates. Now, pick a column of the full flow field matrix and add Gaussian random noise to this field. Downsample the noisy field by a factor of 20 and use SRC to find the closest downsampled library element. Then use this column of the full flow field library as your reconstructed estimate. Try this approach with different levels of noise added to the original flow field. See how much noise is required before the method breaks. Try different approaches to creating a low-dimensional representation of the image (i.e., instead of downsampling, you can measure the flow field in a small 5 × 10 patch and use this as the low-dimensional feature for SRC).
 "
 
-# ╔═╡ 9ca403ad-95cd-4659-a7af-0e470fc3a034
+# ╔═╡ 48e9967c-657b-4ed8-8b02-04a058114b6c
+function plot_six()
+	V = matread(joinpath(data_path, "CYLINDER_ALL.mat"))["VORTALL"]
+	vortmin = -5
+    vortmax = 5
+	V[V .> vortmax] .= vortmax
+    V[V .< vortmin] .= vortmin
+	
+	grid_dims = (449, 199)
 
+	p = plot()
+	t = (1:100) / 100 .* 2 .* π
+    x = 49 .+ 25 .* sin.(t)
+    y = 99 .+ 25 .* cos.(t)
+    
+	@gif for i in 1:size(V, 2)
+		heatmap!(p, reshape(V[:, i], grid_dims);
+			color=:viridis,
+			clim=(vortmin, vortmax),
+			legend=false,
+			ylims=(0, 200),
+			xlims=(0, 200)
+		)
+		plot!(p, x, y, linecolor=:yellow, linewidth=4)
+	end
+end
+
+# ╔═╡ 43a50a1b-13d3-4e9f-a892-acafe76c01ae
+# ╠═╡ disabled = true
+#=╠═╡
+plot_six()
+  ╠═╡ =#
 
 # ╔═╡ 2a95f1b3-fe43-4cc3-942d-1ea443b6515d
 md"## Exercise 3.7
@@ -424,8 +459,7 @@ ysis, following Scherl et al.
 
 3. Clean the contaminated data set by applying RPCA and keeping the low-rank portion **L**. Again, compute the SVD of the decontaminated matrix L and plot the movie of  the flow along with the singular values and first 10 singular vectors. Compare these with the results from the original clean and contaminated data sets.
 
-4. Try to clean the data by applying the Gavish–Donoho threshold to the data matrix
-contaminated with salt-and-pepper noise. Does this work? Explain why or why not.
+4. Try to clean the data by applying the Gavish–Donoho threshold to the data matrix contaminated with salt-and-pepper noise. Does this work? Explain why or why not.
 "
 
 # ╔═╡ 1c4c379f-edeb-472c-8ffe-d78b58caa222
@@ -445,7 +479,87 @@ from Section 3.8.
 "
 
 # ╔═╡ 7da43eff-c7c3-44b2-9276-1d48f2ad442a
+function solve_eight()
+	faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
+    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
+    faces_m = faces_dataset["m"] |> Int
+    faces_n = faces_dataset["n"] |> Int
+    num_faces = faces_dataset["nfaces"]' .|> Int
 
+	reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
+
+	ps = 10:10:200
+	errs = zeros(length(ps), length(num_faces), 2)
+	
+	cursor = 1
+	for (i, num) in collect(enumerate(num_faces[1:end-1]))
+		cursor += num
+		v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
+		v2 = @view faces[:, sum(num_faces[1:i])+1:end]
+		training_faces = hcat(v1, v2)
+		test_face = @view faces[:, cursor+1]
+
+	    average_face = mean(training_faces; dims=2)
+	    a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
+	    X = training_faces - a
+		U, S, Vt = svd(X; full=false)
+		Threads.@threads for (j, p) in collect(enumerate(10:10:200))
+			ψᵣ =  Ũ = @view U[:, 1:p]
+			Q, R, pivot = qr(ψᵣ', ColumnNorm())
+		
+			C = zero(ψᵣ')
+			for k in 1:p
+				@inbounds C[k, pivot[k]] = 1
+			end
+			@inbounds Θ = C * ψᵣ
+		
+			@inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
+			@inbounds y_random_sensor_placement = @view test_face[rand(1:length(test_face), p), :]
+			a_qr_sensor_placement = Θ \ y_qr_sensor_placement
+			a_random_sensor_placement = Θ \ y_random_sensor_placement
+			@inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
+			@inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
+		
+			errs[j, i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
+			errs[j, i, 2] = reconstruction_err(test_face, face_recon_random_sensor_placement)
+		end
+	end
+	errs, ps
+end
+
+# ╔═╡ cab7eecb-6e79-47be-a58b-6f44420bb191
+function plot_eight(sol)
+	errs, ps = sol
+	p1 = plot(;
+		xlabel="p",
+		ylabel="reconstruction error",
+		legend=false,
+		ylims=(0.1, 1.8),
+		title="QR sensors"
+	)
+	xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
+
+	p2 = plot(;
+		xlabel="p",
+		legend=false,
+		ylims=(0.1, 1.8),
+		title="Random sensors"
+	)
+	xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
+	
+	for i in 1:length(10:10:200)
+		boxplot!(p1, errs[i,:,1];
+			outliers=false,		
+		)
+		boxplot!(p2, errs[i, :, 2];
+			outliers=false,
+		)
+	end
+	plot(p1, p2)
+end
+
+# ╔═╡ 1b782cf5-84dd-4a7a-a45a-48d62296e840
+plot_eight(solve_eight())
 
 # ╔═╡ 6af0479e-ae0c-4c30-952f-a13702613fc0
 md"## Exercise 3.9
@@ -481,16 +595,19 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╠═e8f85762-9018-4e3d-b6d1-66e555f9fb5d
 # ╟─3fcc4f34-2742-4364-a1b8-8e924423aca1
 # ╠═1de5daed-9ac7-4780-a276-9ff46ae396d7
-# ╠═c2810938-988d-4558-9d61-271528ef024f
+# ╟─c2810938-988d-4558-9d61-271528ef024f
 # ╠═ab49b66b-9744-4f39-894f-e5b1ab657336
 # ╠═c2700784-253f-462d-a0db-2257b54e2202
 # ╟─19dc20eb-1e63-429e-aef0-bc29fedfed3c
 # ╟─5d9b91f0-c6da-43f4-af6f-95d7df6db2de
 # ╟─63e19dbb-5845-412f-91ad-26a8f89af46c
-# ╠═9ca403ad-95cd-4659-a7af-0e470fc3a034
+# ╠═48e9967c-657b-4ed8-8b02-04a058114b6c
+# ╠═43a50a1b-13d3-4e9f-a892-acafe76c01ae
 # ╟─2a95f1b3-fe43-4cc3-942d-1ea443b6515d
 # ╠═1c4c379f-edeb-472c-8ffe-d78b58caa222
 # ╟─705cd927-f900-45ff-9471-981495ad5a05
 # ╠═7da43eff-c7c3-44b2-9276-1d48f2ad442a
+# ╠═cab7eecb-6e79-47be-a58b-6f44420bb191
+# ╠═1b782cf5-84dd-4a7a-a45a-48d62296e840
 # ╟─6af0479e-ae0c-4c30-952f-a13702613fc0
 # ╠═79a94dcb-2948-4ea0-adf2-8a8b108f7cf9
