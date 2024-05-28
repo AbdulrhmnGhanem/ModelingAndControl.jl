@@ -312,7 +312,6 @@ function plot_three(sol)
 end
 
 # ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
-# ╠═╡ disabled = true
 #=╠═╡
 plot_three(solve_three(Normal()))
   ╠═╡ =#
@@ -327,15 +326,15 @@ Repeat the above exercise with a uniformly sampled random sample matrix. Also re
 md"### unifromly distributed sample matrix"
 
 # ╔═╡ e8f85762-9018-4e3d-b6d1-66e555f9fb5d
+#=╠═╡
 plot_three(solve_three(Uniform()))
+  ╠═╡ =#
 
 # ╔═╡ 3fcc4f34-2742-4364-a1b8-8e924423aca1
 md"### Bernoulli distributed sample matrix"
 
 # ╔═╡ 1de5daed-9ac7-4780-a276-9ff46ae396d7
-#=╠═╡
 plot_three(solve_three(Bernoulli()))
-  ╠═╡ =#
 
 # ╔═╡ c2810938-988d-4558-9d61-271528ef024f
 md"## Exercise 3.5
@@ -559,7 +558,9 @@ function plot_eight(sol)
 end
 
 # ╔═╡ 1b782cf5-84dd-4a7a-a45a-48d62296e840
+#=╠═╡
 plot_eight(solve_eight())
+  ╠═╡ =#
 
 # ╔═╡ 6af0479e-ae0c-4c30-952f-a13702613fc0
 md"## Exercise 3.9
@@ -571,7 +572,81 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 "
 
 # ╔═╡ 79a94dcb-2948-4ea0-adf2-8a8b108f7cf9
+function solve_nine()
+	faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
+    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
+    faces_m = faces_dataset["m"] |> Int
+    faces_n = faces_dataset["n"] |> Int
+    num_faces = faces_dataset["nfaces"]' .|> Int
 
+	reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
+
+	errs = zeros(length(num_faces), 4)
+	
+	cursor = 1
+	for (i, num) in collect(enumerate(num_faces[1:end-1]))
+		cursor += num
+		v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
+		v2 = @view faces[:, sum(num_faces[1:i])+1:end]
+		training_faces = hcat(v1, v2)
+		test_face = @view faces[:, cursor+1]
+
+	    average_face = mean(training_faces; dims=2)
+	    a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
+	    X = training_faces - a
+		U, S, Vt = svd(X; full=false)
+		p = 100
+		r = 90
+		ψᵣ =  Ũ = @view U[:, 1:p]
+		Q, R, pivot = qr(ψᵣ', ColumnNorm())
+		C = zero(ψᵣ')
+		for k in 1:p
+			@inbounds C[k, pivot[k]] = 1
+		end
+		@inbounds Θ = C * ψᵣ
+		Θ̃ = @view Θ[:, 1:r]
+
+		@inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
+		@inbounds y_random_sensor_placement = @view test_face[rand(1:length(test_face), p), :]
+
+		a_qr_sensor_placement = Θ \ y_qr_sensor_placement
+		a_random_sensor_placement = Θ \ y_random_sensor_placement
+		
+		ã_qr_sensor_placement = Θ̃ \ y_qr_sensor_placement
+		ã_random_sensor_placement = Θ̃ \ y_random_sensor_placement
+		
+		@inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
+		@inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
+		
+		@inbounds face_recon_qr_sensor_placement2 = ψᵣ[:,1:r] * ã_qr_sensor_placement
+		@inbounds face_recon_random_sensor_placement2 = ψᵣ[:, 1:r] * ã_random_sensor_placement
+	
+		errs[i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
+		errs[i, 2] = reconstruction_err(test_face, face_recon_random_sensor_placement)
+
+		errs[i, 3] = reconstruction_err(test_face, face_recon_qr_sensor_placement2)
+		errs[i, 4] = reconstruction_err(test_face, face_recon_random_sensor_placement2)
+	end
+	errs
+end
+
+# ╔═╡ 35ab1fcd-f12c-411e-9229-04a3533f4a1f
+function plot_nine(sol)
+	groupedbar(sol;
+	bar_position = :stack,
+	xlabel="Face index",
+	ylabel="reconstruction error",
+	labels=reshape(["QR (r = 100)", "Random (r = 100)", "QR (r = 90)", "Random (r = 90)"], 1, :)
+)
+end
+
+# ╔═╡ 47e0accf-5b04-4a7d-af11-0b54b6b44bc7
+plot_nine(solve_nine())
+
+# ╔═╡ c83b207c-d532-4dbc-befc-4c14cb5996dd
+md"!!! remark
+	Re-constructing less modes than the sensor leads to a better error as expected (see page 126).
+"
 
 # ╔═╡ Cell order:
 # ╠═03fc6b06-dd40-11ee-2447-c16ee3267487
@@ -611,3 +686,6 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 # ╠═1b782cf5-84dd-4a7a-a45a-48d62296e840
 # ╟─6af0479e-ae0c-4c30-952f-a13702613fc0
 # ╠═79a94dcb-2948-4ea0-adf2-8a8b108f7cf9
+# ╠═35ab1fcd-f12c-411e-9229-04a3533f4a1f
+# ╟─47e0accf-5b04-4a7d-af11-0b54b6b44bc7
+# ╟─c83b207c-d532-4dbc-befc-4c14cb5996dd
