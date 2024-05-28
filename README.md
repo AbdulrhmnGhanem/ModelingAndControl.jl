@@ -4,6 +4,6 @@ So far it includes the implementation of two books using julia:
 
 1. [Practical MATLAB Modeling with Simulink](https://link.springer.com/book/10.1007/978-1-4842-5799-9)
 2. [Mastering System Identification in 100 Exercises](https://onlinelibrary.wiley.com/doi/book/10.1002/9781118218532)
-
+3. [Data-Driven Science and Engineering: Machine Learning, Dynamical Systems, and Control](https://databookuw.com/)
 ## notes
 1. In computer and control systems (Feb 2023 - )

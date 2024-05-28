@@ -256,34 +256,40 @@ function plot_three(sol)
 	p1 = boxplot(1:10:100, errs';
 		legend=false,
 		title="ẽ",
-		xlabel="p"
+		xlabel="p",
+		outliers=false,
 	)
 	p2 = boxplot(1:10:100, l₀';
 		legend=false,
 		title="L₀",
 		xlabel="p",
+		outliers=false,
 	)
 		
 	p3 = boxplot(1:10:100, l₁';
 		legend=false,
 		title="L₁",
 		xlabel="p",
+		outliers=false,
 	)
 	
 	p4 = boxplot(errs2';
 		legend=false,
 		title="ẽ",
 		xlabel="k",
+		outliers=false,
 	)
 	p5 = boxplot(l₀2';
 		legend=false,
 		title="L₀",
 		xlabel="k",
+		outliers=false,
 	)
 	p6 = boxplot(l₁2';
 		legend=false,
 		title="L₁",
 		xlabel="k",
+		outliers=false,
 	)
 
 	p7 = boxplot(ns', errs3';
@@ -291,18 +297,21 @@ function plot_three(sol)
 		xlabel="n",
 		title="ẽ",
 		xrotation=90,
+		outliers=false,
 	)
 	p8 = boxplot(ns', l₀3';
 		legend=false,
 		title="L₀",
 		xlabel="n",
 		xrotation=90,
+		outliers=false,
 	)
 	p9 = boxplot(ns', l₁3';
 		legend=false,
 		xlabel="n",
 		title="L₁",
 		xrotation=90,
+		outliers=false,
 	)
 
 	plot(p1, p2, p3, p4, p5, p6, p7, p8, p9;
@@ -312,9 +321,7 @@ function plot_three(sol)
 end
 
 # ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
-#=╠═╡
 plot_three(solve_three(Normal()))
-  ╠═╡ =#
 
 # ╔═╡ 01a25614-364d-473d-87dd-76f33174bb5e
 md"## Exercise 3.4
@@ -326,9 +333,7 @@ Repeat the above exercise with a uniformly sampled random sample matrix. Also re
 md"### unifromly distributed sample matrix"
 
 # ╔═╡ e8f85762-9018-4e3d-b6d1-66e555f9fb5d
-#=╠═╡
 plot_three(solve_three(Uniform()))
-  ╠═╡ =#
 
 # ╔═╡ 3fcc4f34-2742-4364-a1b8-8e924423aca1
 md"### Bernoulli distributed sample matrix"
@@ -557,10 +562,13 @@ function plot_eight(sol)
 	plot(p1, p2)
 end
 
+# ╔═╡ 1be97da5-57f0-4902-94e2-dcc8f6904c84
+md"!!! remark
+	Increasing the number of QR sensors significantly decreases the reconstruction error. Compared to the randomly placed sensors which becomes asymptotic around 50 sensors.
+"
+
 # ╔═╡ 1b782cf5-84dd-4a7a-a45a-48d62296e840
-#=╠═╡
 plot_eight(solve_eight())
-  ╠═╡ =#
 
 # ╔═╡ 6af0479e-ae0c-4c30-952f-a13702613fc0
 md"## Exercise 3.9
@@ -683,7 +691,8 @@ md"!!! remark
 # ╟─705cd927-f900-45ff-9471-981495ad5a05
 # ╠═7da43eff-c7c3-44b2-9276-1d48f2ad442a
 # ╠═cab7eecb-6e79-47be-a58b-6f44420bb191
-# ╠═1b782cf5-84dd-4a7a-a45a-48d62296e840
+# ╟─1be97da5-57f0-4902-94e2-dcc8f6904c84
+# ╟─1b782cf5-84dd-4a7a-a45a-48d62296e840
 # ╟─6af0479e-ae0c-4c30-952f-a13702613fc0
 # ╠═79a94dcb-2948-4ea0-adf2-8a8b108f7cf9
 # ╠═35ab1fcd-f12c-411e-9229-04a3533f4a1f
