@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "b37366239a6523c1b9a69f45c6a7b828d952546d"
+project_hash = "260835bbf3eba85f6d30e20003ae7789a6e4670d"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -731,6 +731,12 @@ deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "XZ_jll", "Zlib_jll", 
 git-tree-sha1 = "ab92028799ddede63b16af075f8a053a2af04339"
 uuid = "ab5a07f8-06af-567f-a878-e8bb879eba5a"
 version = "0.189.0+1"
+
+[[deps.EllipsisNotation]]
+deps = ["StaticArrayInterface"]
+git-tree-sha1 = "3507300d4343e8e4ad080ad24e335274c2e297a9"
+uuid = "da5c29d0-fa7d-589e-88eb-ea29b0a81949"
+version = "1.8.0"
 
 [[deps.EnumX]]
 git-tree-sha1 = "bdb1942cd4c45e3c678fd11569d5cccd80976237"
@@ -3322,6 +3328,25 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Wayland_jll", "Xorg_libX11_jll", "
 git-tree-sha1 = "2f0486047a07670caad3a81a075d2e518acc5c59"
 uuid = "a44049a8-05dd-5a78-86c9-5fde0876e88c"
 version = "1.3.243+0"
+
+[[deps.WaterLily]]
+deps = ["EllipsisNotation", "ForwardDiff", "KernelAbstractions", "LinearAlgebra", "Printf", "Reexport", "Requires", "StaticArrays", "TOML"]
+git-tree-sha1 = "a11c808b55dcd1af636198cd80272029505fcea5"
+pinned = true
+uuid = "ed894a53-35f9-47f1-b17f-85db9237eebd"
+version = "1.0.4"
+
+    [deps.WaterLily.extensions]
+    WaterLilyAMDGPUExt = "AMDGPU"
+    WaterLilyCUDAExt = "CUDA"
+    WaterLilyReadVTKExt = "ReadVTK"
+    WaterLilyWriteVTKExt = "WriteVTK"
+
+    [deps.WaterLily.weakdeps]
+    AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    ReadVTK = "dc215faf-f008-4882-a9f7-a79a826fadc3"
+    WriteVTK = "64499a7a-5c06-52f2-abe2-ccb03c286192"
 
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "EpollShim_jll", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]

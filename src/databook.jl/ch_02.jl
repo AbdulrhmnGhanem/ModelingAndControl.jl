@@ -58,7 +58,7 @@ function heat()
         dû .= -α^2 * (k .^ 2) .* û
     end
     prob = ODEProblem(rhs, u₀, tspan, params)
-    û = solve(prob)
+    û = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)))
     u = zeros(Complex, size(û)...)
 
     for k in 1:length(eachcol(u))
@@ -212,7 +212,7 @@ function solve_three()
     t = tspan[1]:tspan[2]/500:tspan[2]
 
     prob = ODEProblem(rhs, u₀, tspan)
-    u = solve(prob, saveat=t, reltol=1e-10, abstol=1e-10)
+    u = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)), saveat=t, reltol=1e-10, abstol=1e-10)
     sol, t = u[1:end, 1:end], u.t
 
 
@@ -264,7 +264,7 @@ function solve_four()
     t = tspan[1]:tspan[2]/200:tspan[2]
 
     prob = ODEProblem(rhs, u₀, tspan)
-    u = solve(prob, saveat=t)
+    u = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)), saveat=t)
     sol, t = u[1:end, 1:end], u.t
 
     @gif for i in 1:length(eachcol(sol))
@@ -426,7 +426,8 @@ function solve_eight()
     )
     plot(p1, p2, p3, p4, p5, p6;
         layout=(3, 2),
-        size=(600, 800)
+        size=(600, 800),
+		xrotation=90,
     )
 end
 
