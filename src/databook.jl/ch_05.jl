@@ -67,6 +67,12 @@ function svht(Σ::Vector, dim::Tuple{Int,Int})
     return rank
 end
 
+# ╔═╡ 1341cf2c-532c-4e06-a946-2a1fc02a7568
+SVMClassifier = @load SVMClassifier pkg=MLJScikitLearnInterface
+
+# ╔═╡ 9d6e2b5d-f48e-4808-ada3-e399cf6e097d
+DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree
+
 # ╔═╡ d1fdbba8-ba45-488c-bf9c-766cf6dd98ae
 function solve_one()
 	training_data = MNIST(:train)
@@ -127,14 +133,13 @@ function solve_one()
 	train_df = DataFrame(X_train', :auto)
 	test_df = DataFrame(X_test', :auto)
 	
-	SVMClassifier = @load SVMClassifier pkg=MLJScikitLearnInterface verbosity=0
+	
 	SVM = SVMClassifier(cache_size=1000)
 	svm = machine(SVM, train_df, categorical(targets))
 	fit!(svm)
 
 	svm_accuracy = mean(categorical(test_targets) .== coerce(MLJ.predict(svm, test_df), Multiclass))
 
-	DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
 	DecisionTree = DecisionTreeClassifier()
 	decision_tree = machine(DecisionTree, train_df, categorical(targets))
 	fit!(decision_tree)
@@ -179,9 +184,8 @@ function plot_one(sol_one)
 		title="Singular values",
 		label=missing,
 		grid=false,
-		legend=:bottomright,
 	)
-	vline!([r]; label="optimal threshold")
+	vline!([r]; label="optimal r")
 
 	p2 = scatter(projections[:, 1], projections[:, 2], projections[:, 3],
 		marker_z=targets, 
@@ -191,7 +195,7 @@ function plot_one(sol_one)
 		zlabel="Mode 5",
 	)
 
-	p3 = plot(grid=false, axis=false, title="LDA between 0 and 1", legend=:topleft, ylim=(0,10))
+	p3 = plot(grid=false, axis=false, title="LDA between 0 and 1", legend=:topleft, ylim=(-1,10))
 
 	for label in [0, 1]
 		points = y_lda1[:, targets_lda1 .== label]'
@@ -204,7 +208,7 @@ function plot_one(sol_one)
 		scatter!(p4, points[1, :], points[2, :], label=label, alpha=0.5)
 	end
 
-	p5 = scatter(legend=false, grid=false, aspectratio=1,title="Discrimination hardness")
+	p5 = scatter(legend=false, grid=false, aspectratio=1,title="Discrimination hardness", xlims=(1, 10))
 
 	# easiest and hardest to discriminate
 	for i in 1:10
@@ -232,6 +236,9 @@ end
 
 # ╔═╡ a88eaff3-9390-4357-a950-ee80e87c51e7
 md"""
+- The number of modes required to construct the images is $r.
+##
+
 - The easiest two digits using LDA are $(easy[2][1]) and $(easy[2][2]).
 - The hardest two digits using LDA are $(hard[2][1]) and $(hard[2][2]).
 ##
@@ -288,9 +295,11 @@ Face identification: see if you can build a classifier to identify individuals i
 # ╟─dc1a9923-a2a8-4ff3-a7d0-89eeb4b4d636
 # ╟─4f10506a-51b2-4251-b188-6797104778e5
 # ╠═b15f8541-faf1-46cc-b045-fbfdc75182a8
+# ╠═1341cf2c-532c-4e06-a946-2a1fc02a7568
+# ╠═9d6e2b5d-f48e-4808-ada3-e399cf6e097d
 # ╠═d1fdbba8-ba45-488c-bf9c-766cf6dd98ae
 # ╟─a88eaff3-9390-4357-a950-ee80e87c51e7
-# ╟─2889db74-209d-4d6b-8b61-474c3e796e2c
+# ╠═2889db74-209d-4d6b-8b61-474c3e796e2c
 # ╟─51586ab5-ae10-4274-832d-7365124f56a2
 # ╟─8b934310-a31c-4e13-a7f4-b74af7fbea1f
 # ╠═43440805-55af-4d80-ae42-a2bfc0fd0af7
