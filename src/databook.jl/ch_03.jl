@@ -14,7 +14,21 @@ begin
 end;
 
 # ╔═╡ 72a551d1-1282-4cce-9034-2dee7fabd6d7
-using FileIO, ImageShow, ImageCore, FFTW, LinearAlgebra, Compat, Plots, Distributions, Distances, JuMP, Optim, StatsPlots, Distributions, MAT, SparseArrays
+using FileIO,
+    ImageShow,
+    ImageCore,
+    FFTW,
+    LinearAlgebra,
+    Compat,
+    Plots,
+    Distributions,
+    Distances,
+    JuMP,
+    Optim,
+    StatsPlots,
+    Distributions,
+    MAT,
+    SparseArrays
 
 # ╔═╡ 00f5bf70-27cd-47cb-af66-1963dea45fe5
 md"# Chapter 3 - Sparsity and Compressed Sensing"
@@ -52,16 +66,21 @@ function solve_one(resolutions, ratios)
         end
     end
 
-    plot(ratios, errors';
-        xlabel="Compression ratio",
-        ylabel="error",
-        labels=reshape(["$(x)x$y" for (x, y) in resolutions], 1, :),
-        legendtitle="Resolution",
+    plot(
+        ratios,
+        errors';
+        xlabel = "Compression ratio",
+        ylabel = "error",
+        labels = reshape(["$(x)x$y" for (x, y) in resolutions], 1, :),
+        legendtitle = "Resolution",
     )
 end
 
 # ╔═╡ b1274594-558b-47d8-8c66-b5fa7f6076df
-solve_one([[2000, 1500], [1000, 750], [500, 375], [200, 150], [100, 75]], logrange(0.001, 0.9, 10))
+solve_one(
+    [[2000, 1500], [1000, 750], [500, 375], [200, 150], [100, 75]],
+    logrange(0.001, 0.9, 10),
+)
 
 # ╔═╡ b55f6990-88fe-4fd6-8827-c39e1adf6eb4
 md"
@@ -88,7 +107,7 @@ begin
         radiis = []
         for n in Ns
             darts = Vector{Matrix{Float64}}(undef, num_darts)
-            for i in 1:num_darts
+            for i = 1:num_darts
                 darts[i] = rand(dist, 1, n)
             end
             distance(p) = euclidean(vec(p), ones(n))
@@ -102,22 +121,22 @@ begin
     end
 
     function plot_two(Ns, fractions_inside, radiis)
-        p1 = histogram(radiis;
-            xlabel="Radius",
-            ylabel="Count",
-            legendtitle="N",
-            labels=reshape(2:10, 1, :),
-            fillalpha=0.7,
+        p1 = histogram(
+            radiis;
+            xlabel = "Radius",
+            ylabel = "Count",
+            legendtitle = "N",
+            labels = reshape(2:10, 1, :),
+            fillalpha = 0.7,
         )
-        p2 = plot(Ns, fractions_inside;
-            xlabel="N",
-            ylabel="Fraction of darts inside",
-            legends=false,
+        p2 = plot(
+            Ns,
+            fractions_inside;
+            xlabel = "N",
+            ylabel = "Fraction of darts inside",
+            legends = false,
         )
-        plot(p1, p2;
-            layout=(2, 1),
-            size=(800, 800),
-        )
+        plot(p1, p2; layout = (2, 1), size = (800, 800))
     end
 end
 
@@ -146,7 +165,7 @@ begin
         dftmtx
     end
     dftmtx = build_and_test_dftmtx()
-    heatmap(real.(dftmtx(200)), c=:inferno, color=:black, title="DFT Matrix Ψ")
+    heatmap(real.(dftmtx(200)), c = :inferno, color = :black, title = "DFT Matrix Ψ")
 end
 
 # ╔═╡ 38bbd6a1-c5b6-4e13-8ecd-f986b22bd4ec
@@ -168,19 +187,19 @@ function solve_three(distribution)
     k = 5
     Ψ = dftmtx(n)
     s = zeros(ComplexF64, n)
-    non_zero_indices = sample(1:n, k, replace=false)
+    non_zero_indices = sample(1:n, k, replace = false)
     s[non_zero_indices] .= 1
 
     num_of_selection = 100
     num_of_realizations = 10
     step = 10
-    
-	errs = zeros(num_of_selection ÷ step, num_of_realizations)
-	l₀= similar(errs)
-	l₁ = similar(errs)
-	
+
+    errs = zeros(num_of_selection ÷ step, num_of_realizations)
+    l₀ = similar(errs)
+    l₁ = similar(errs)
+
     for (j, p) in collect(enumerate(1:step:num_of_selection))
-        Threads.@threads for i in 1:num_of_realizations
+        Threads.@threads for i = 1:num_of_realizations
             C = rand(distribution, p, n)
             y = C * Ψ * s
             model = Model(Optim.Optimizer)
@@ -189,135 +208,117 @@ function solve_three(distribution)
             @constraint(model, C * Ψ * s_L1 .== y)
             optimize!(model)
             ŝ = value.(s_L1)
-			l₀[j, i] = norm(ŝ, 0)
-			l₁[j, i] = norm(ŝ, 1)
+            l₀[j, i] = norm(ŝ, 0)
+            l₁[j, i] = norm(ŝ, 1)
             errs[j, i] = norm(ŝ - s) / norm(s, 1)
         end
     end
-	
-	errs2 = zeros(20, num_of_realizations)
-	l₀2= similar(errs2)
-	l₁2 = similar(errs2)
-	
-	for (j, k) in collect(enumerate(1:20))
-		Threads.@threads for i in 1:num_of_realizations
-			s = zeros(ComplexF64, n)
-    		non_zero_indices = sample(1:n, k, replace=false)
-    		s[non_zero_indices] .= 1
 
-			C = rand(distribution, 10, n)
-			y = C * Ψ * s
+    errs2 = zeros(20, num_of_realizations)
+    l₀2 = similar(errs2)
+    l₁2 = similar(errs2)
 
-			model = Model(Optim.Optimizer)
+    for (j, k) in collect(enumerate(1:20))
+        Threads.@threads for i = 1:num_of_realizations
+            s = zeros(ComplexF64, n)
+            non_zero_indices = sample(1:n, k, replace = false)
+            s[non_zero_indices] .= 1
+
+            C = rand(distribution, 10, n)
+            y = C * Ψ * s
+
+            model = Model(Optim.Optimizer)
             @variable(model, s_L1[1:n])
             @objective(model, Min, sum(abs.(s_L1)))
             @constraint(model, C * Ψ * s_L1 .== y)
             optimize!(model)
             ŝ = value.(s_L1)
-			l₀2[j, i] = norm(ŝ, 0)
-			l₁2[j, i] = norm(ŝ, 1)
+            l₀2[j, i] = norm(ŝ, 0)
+            l₁2[j, i] = norm(ŝ, 1)
             errs2[j, i] = norm(ŝ - s) / norm(s, 1)
-		end
-	end
+        end
+    end
 
-	ns = [100, 500, 1000, 2000, 5000]
-	errs3 = zeros(length(ns), num_of_realizations)
-	l₀3= similar(errs3)
-	l₁3 = similar(errs3)
-	
-	for (j, n) in collect(enumerate(ns))
-		k = 5
-		Ψ = dftmtx(n)
-		s = zeros(ComplexF64, n)
-		non_zero_indices = sample(1:n, k, replace=false)
-		s[non_zero_indices] .= 1
+    ns = [100, 500, 1000, 2000, 5000]
+    errs3 = zeros(length(ns), num_of_realizations)
+    l₀3 = similar(errs3)
+    l₁3 = similar(errs3)
 
-		Threads.@threads for i in 1:num_of_realizations
-			C = rand(distribution, 10, n)
-			y = C * Ψ * s
+    for (j, n) in collect(enumerate(ns))
+        k = 5
+        Ψ = dftmtx(n)
+        s = zeros(ComplexF64, n)
+        non_zero_indices = sample(1:n, k, replace = false)
+        s[non_zero_indices] .= 1
 
-			model = Model(Optim.Optimizer)
+        Threads.@threads for i = 1:num_of_realizations
+            C = rand(distribution, 10, n)
+            y = C * Ψ * s
+
+            model = Model(Optim.Optimizer)
             @variable(model, s_L1[1:n])
             @objective(model, Min, sum(abs.(s_L1)))
             @constraint(model, C * Ψ * s_L1 .== y)
             optimize!(model)
             ŝ = value.(s_L1)
-			l₀3[j, i] = norm(ŝ, 0)
-			l₁3[j, i] = norm(ŝ, 1)
+            l₀3[j, i] = norm(ŝ, 0)
+            l₁3[j, i] = norm(ŝ, 1)
             errs3[j, i] = norm(ŝ - s) / norm(s, 1)
-		end
-	end
+        end
+    end
     errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3, ns
 end
 
 # ╔═╡ 0077bafb-2beb-4743-a1f1-88b54d345058
 function plot_three(sol)
-	errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3, ns = sol
-	p1 = boxplot(1:10:100, errs';
-		legend=false,
-		title="ẽ",
-		xlabel="p",
-		outliers=false,
-	)
-	p2 = boxplot(1:10:100, l₀';
-		legend=false,
-		title="L₀",
-		xlabel="p",
-		outliers=false,
-	)
-		
-	p3 = boxplot(1:10:100, l₁';
-		legend=false,
-		title="L₁",
-		xlabel="p",
-		outliers=false,
-	)
-	
-	p4 = boxplot(errs2';
-		legend=false,
-		title="ẽ",
-		xlabel="k",
-		outliers=false,
-	)
-	p5 = boxplot(l₀2';
-		legend=false,
-		title="L₀",
-		xlabel="k",
-		outliers=false,
-	)
-	p6 = boxplot(l₁2';
-		legend=false,
-		title="L₁",
-		xlabel="k",
-		outliers=false,
-	)
+    errs, l₀, l₁, errs2, l₀2, l₁2, errs3, l₀3, l₁3, ns = sol
+    p1 = boxplot(
+        1:10:100,
+        errs';
+        legend = false,
+        title = "ẽ",
+        xlabel = "p",
+        outliers = false,
+    )
+    p2 =
+        boxplot(1:10:100, l₀'; legend = false, title = "L₀", xlabel = "p", outliers = false)
 
-	p7 = boxplot(ns', errs3';
-		legend=false,
-		xlabel="n",
-		title="ẽ",
-		xrotation=90,
-		outliers=false,
-	)
-	p8 = boxplot(ns', l₀3';
-		legend=false,
-		title="L₀",
-		xlabel="n",
-		xrotation=90,
-		outliers=false,
-	)
-	p9 = boxplot(ns', l₁3';
-		legend=false,
-		xlabel="n",
-		title="L₁",
-		xrotation=90,
-		outliers=false,
-	)
+    p3 =
+        boxplot(1:10:100, l₁'; legend = false, title = "L₁", xlabel = "p", outliers = false)
 
-	plot(p1, p2, p3, p4, p5, p6, p7, p8, p9;
-		layout=(3, 3),
-		size=(600, 600)
-	)
+    p4 = boxplot(errs2'; legend = false, title = "ẽ", xlabel = "k", outliers = false)
+    p5 = boxplot(l₀2'; legend = false, title = "L₀", xlabel = "k", outliers = false)
+    p6 = boxplot(l₁2'; legend = false, title = "L₁", xlabel = "k", outliers = false)
+
+    p7 = boxplot(
+        ns',
+        errs3';
+        legend = false,
+        xlabel = "n",
+        title = "ẽ",
+        xrotation = 90,
+        outliers = false,
+    )
+    p8 = boxplot(
+        ns',
+        l₀3';
+        legend = false,
+        title = "L₀",
+        xlabel = "n",
+        xrotation = 90,
+        outliers = false,
+    )
+    p9 = boxplot(
+        ns',
+        l₁3';
+        legend = false,
+        xlabel = "n",
+        title = "L₁",
+        xrotation = 90,
+        outliers = false,
+    )
+
+    plot(p1, p2, p3, p4, p5, p6, p7, p8, p9; layout = (3, 3), size = (600, 600))
 end
 
 # ╔═╡ 56f955be-2dba-4080-8881-bfc66892a783
@@ -351,53 +352,37 @@ $\mu(\mathbf{C}, \mathbf{\Psi}) = \sqrt{n} \max_{j,k} \left| \langle c_k, \psi_j
 
 # ╔═╡ ab49b66b-9744-4f39-894f-e5b1ab657336
 function solve_five()
-	normalize_row_length(m) = mapslices(r -> r ./ norm(r), m, dims=2)
-	μ(C, Ψ) = √n * maximum(abs.(map(m -> m[1]' * m[2], zip(eachrow(C), eachcol(Ψ)))))
-	
-	n = 512
-	p = 16
-	# normalize each col length in Ψ to 1
-	Ψ = dftmtx(n) |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
-	num_of_trials = 10_000 
-	incoherence = zeros(num_of_trials, 3)
-	for i in 1:num_of_trials
-		C₁ = randn(p, n) |> normalize_row_length # gaussian
-		C₂ = rand(Bernoulli(), p, n) |> normalize_row_length  # bernoulli
-		C₃ = zeros(p, n)
-		C₃[2, 2] = 1  # single pixel
-		
-		incoherence[i,1] = μ(C₁, Ψ)
-		incoherence[i,2] = μ(C₂, Ψ)
-		incoherence[i,3] = μ(C₃, Ψ)
-	end
-	incoherence
+    normalize_row_length(m) = mapslices(r -> r ./ norm(r), m, dims = 2)
+    μ(C, Ψ) = √n * maximum(abs.(map(m -> m[1]' * m[2], zip(eachrow(C), eachcol(Ψ)))))
+
+    n = 512
+    p = 16
+    # normalize each col length in Ψ to 1
+    Ψ = dftmtx(n) |> m -> mapslices(r -> r ./ norm(r), m, dims = 1)
+    num_of_trials = 10_000
+    incoherence = zeros(num_of_trials, 3)
+    for i = 1:num_of_trials
+        C₁ = randn(p, n) |> normalize_row_length # gaussian
+        C₂ = rand(Bernoulli(), p, n) |> normalize_row_length  # bernoulli
+        C₃ = zeros(p, n)
+        C₃[2, 2] = 1  # single pixel
+
+        incoherence[i, 1] = μ(C₁, Ψ)
+        incoherence[i, 2] = μ(C₂, Ψ)
+        incoherence[i, 3] = μ(C₃, Ψ)
+    end
+    incoherence
 end
 
 # ╔═╡ c2700784-253f-462d-a0db-2257b54e2202
 function plot_five(sol)
-	incoherence = sol
+    incoherence = sol
 
-	p1 = histogram(incoherence[:, 1];
-		title="Normal",
-		xlabel="μ",
-		ylabel="N",
-		
-	)
-	p2 = histogram(incoherence[:, 2];
-		title="Bernoulli",
-		xlabel="μ",
-		ylabel="N",
-	)
-	p3 = histogram(incoherence[:, 3];
-		title="Single pixel",
-		xlabel="μ",
-		ylabel="N",
-	)
+    p1 = histogram(incoherence[:, 1]; title = "Normal", xlabel = "μ", ylabel = "N")
+    p2 = histogram(incoherence[:, 2]; title = "Bernoulli", xlabel = "μ", ylabel = "N")
+    p3 = histogram(incoherence[:, 3]; title = "Single pixel", xlabel = "μ", ylabel = "N")
 
-	plot(p1, p2, p3;
-		layout=(3, 1),
-		legend=false,
-	)
+    plot(p1, p2, p3; layout = (3, 1), legend = false)
 end
 
 # ╔═╡ 19dc20eb-1e63-429e-aef0-bc29fedfed3c
@@ -420,29 +405,31 @@ This exercise will explore sparse representation from Section 3.6 to estimate a 
 
 # ╔═╡ 48e9967c-657b-4ed8-8b02-04a058114b6c
 function plot_six()
-	V = matread(joinpath(data_path, "CYLINDER_ALL.mat"))["VORTALL"]
-	vortmin = -5
+    V = matread(joinpath(data_path, "CYLINDER_ALL.mat"))["VORTALL"]
+    vortmin = -5
     vortmax = 5
-	V[V .> vortmax] .= vortmax
-    V[V .< vortmin] .= vortmin
-	
-	grid_dims = (449, 199)
+    V[V.>vortmax] .= vortmax
+    V[V.<vortmin] .= vortmin
 
-	p = plot()
-	t = (1:100) / 100 .* 2 .* π
+    grid_dims = (449, 199)
+
+    p = plot()
+    t = (1:100) / 100 .* 2 .* π
     x = 49 .+ 25 .* sin.(t)
     y = 99 .+ 25 .* cos.(t)
-    
-	@gif for i in 1:size(V, 2)
-		heatmap!(p, reshape(V[:, i], grid_dims);
-			color=:viridis,
-			clim=(vortmin, vortmax),
-			legend=false,
-			ylims=(0, 200),
-			xlims=(0, 200)
-		)
-		plot!(p, x, y, linecolor=:yellow, linewidth=4)
-	end
+
+    @gif for i = 1:size(V, 2)
+        heatmap!(
+            p,
+            reshape(V[:, i], grid_dims);
+            color = :viridis,
+            clim = (vortmin, vortmax),
+            legend = false,
+            ylims = (0, 200),
+            xlims = (0, 200),
+        )
+        plot!(p, x, y, linecolor = :yellow, linewidth = 4)
+    end
 end
 
 # ╔═╡ 43a50a1b-13d3-4e9f-a892-acafe76c01ae
@@ -484,82 +471,75 @@ from Section 3.8.
 
 # ╔═╡ 7da43eff-c7c3-44b2-9276-1d48f2ad442a
 function solve_eight()
-	faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
-    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
+    faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
+    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims = 1)
     faces_m = faces_dataset["m"] |> Int
     faces_n = faces_dataset["n"] |> Int
     num_faces = faces_dataset["nfaces"]' .|> Int
 
-	reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
+    reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
 
-	ps = 10:10:200
-	errs = zeros(length(ps), length(num_faces), 2)
-	
-	cursor = 1
-	for (i, num) in collect(enumerate(num_faces[1:end-1]))
-		cursor += num
-		v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
-		v2 = @view faces[:, sum(num_faces[1:i])+1:end]
-		training_faces = hcat(v1, v2)
-		test_face = @view faces[:, cursor+1]
+    ps = 10:10:200
+    errs = zeros(length(ps), length(num_faces), 2)
 
-	    average_face = mean(training_faces; dims=2)
-	    a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
-	    X = training_faces - a
-		U, S, Vt = svd(X; full=false)
-		Threads.@threads for (j, p) in collect(enumerate(10:10:200))
-			ψᵣ =  Ũ = @view U[:, 1:p]
-			Q, R, pivot = qr(ψᵣ', ColumnNorm())
-		
-			C = zero(ψᵣ')
-			for k in 1:p
-				@inbounds C[k, pivot[k]] = 1
-			end
-			@inbounds Θ = C * ψᵣ
-		
-			@inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
-			@inbounds y_random_sensor_placement = @view test_face[rand(1:length(test_face), p), :]
-			a_qr_sensor_placement = Θ \ y_qr_sensor_placement
-			a_random_sensor_placement = Θ \ y_random_sensor_placement
-			@inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
-			@inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
-		
-			errs[j, i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
-			errs[j, i, 2] = reconstruction_err(test_face, face_recon_random_sensor_placement)
-		end
-	end
-	errs, ps
+    cursor = 1
+    for (i, num) in collect(enumerate(num_faces[1:end-1]))
+        cursor += num
+        v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
+        v2 = @view faces[:, sum(num_faces[1:i])+1:end]
+        training_faces = hcat(v1, v2)
+        test_face = @view faces[:, cursor+1]
+
+        average_face = mean(training_faces; dims = 2)
+        a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
+        X = training_faces - a
+        U, S, Vt = svd(X; full = false)
+        Threads.@threads for (j, p) in collect(enumerate(10:10:200))
+            ψᵣ = Ũ = @view U[:, 1:p]
+            Q, R, pivot = qr(ψᵣ', ColumnNorm())
+
+            C = zero(ψᵣ')
+            for k = 1:p
+                @inbounds C[k, pivot[k]] = 1
+            end
+            @inbounds Θ = C * ψᵣ
+
+            @inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
+            @inbounds y_random_sensor_placement =
+                @view test_face[rand(1:length(test_face), p), :]
+            a_qr_sensor_placement = Θ \ y_qr_sensor_placement
+            a_random_sensor_placement = Θ \ y_random_sensor_placement
+            @inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
+            @inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
+
+            errs[j, i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
+            errs[j, i, 2] =
+                reconstruction_err(test_face, face_recon_random_sensor_placement)
+        end
+    end
+    errs, ps
 end
 
 # ╔═╡ cab7eecb-6e79-47be-a58b-6f44420bb191
 function plot_eight(sol)
-	errs, ps = sol
-	p1 = plot(;
-		xlabel="p",
-		ylabel="reconstruction error",
-		legend=false,
-		ylims=(0.1, 1.8),
-		title="QR sensors"
-	)
-	xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
+    errs, ps = sol
+    p1 = plot(;
+        xlabel = "p",
+        ylabel = "reconstruction error",
+        legend = false,
+        ylims = (0.1, 1.8),
+        title = "QR sensors",
+    )
+    xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
 
-	p2 = plot(;
-		xlabel="p",
-		legend=false,
-		ylims=(0.1, 1.8),
-		title="Random sensors"
-	)
-	xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
-	
-	for i in 1:length(10:10:200)
-		boxplot!(p1, errs[i,:,1];
-			outliers=false,		
-		)
-		boxplot!(p2, errs[i, :, 2];
-			outliers=false,
-		)
-	end
-	plot(p1, p2)
+    p2 = plot(; xlabel = "p", legend = false, ylims = (0.1, 1.8), title = "Random sensors")
+    xticks!(([5.0, 10.0, 15.0, 20], ["50", "100", "150", "200"]))
+
+    for i = 1:length(10:10:200)
+        boxplot!(p1, errs[i, :, 1]; outliers = false)
+        boxplot!(p2, errs[i, :, 2]; outliers = false)
+    end
+    plot(p1, p2)
 end
 
 # ╔═╡ 1be97da5-57f0-4902-94e2-dcc8f6904c84
@@ -581,71 +561,78 @@ by sampling the p rows of the r = 100 and r = 90 columns of $\hat U$ from the SV
 
 # ╔═╡ 79a94dcb-2948-4ea0-adf2-8a8b108f7cf9
 function solve_nine()
-	faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
-    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims=1)
+    faces_dataset = matread(joinpath(data_path, "allFaces.mat"))
+    faces = faces_dataset["faces"] |> m -> mapslices(r -> r ./ norm(r), m, dims = 1)
     faces_m = faces_dataset["m"] |> Int
     faces_n = faces_dataset["n"] |> Int
     num_faces = faces_dataset["nfaces"]' .|> Int
 
-	reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
+    reconstruction_err(test_face, reconstructed) = norm(test_face - reconstructed, 2)
 
-	errs = zeros(length(num_faces), 4)
-	
-	cursor = 1
-	for (i, num) in collect(enumerate(num_faces[1:end-1]))
-		cursor += num
-		v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
-		v2 = @view faces[:, sum(num_faces[1:i])+1:end]
-		training_faces = hcat(v1, v2)
-		test_face = @view faces[:, cursor+1]
+    errs = zeros(length(num_faces), 4)
 
-	    average_face = mean(training_faces; dims=2)
-	    a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
-	    X = training_faces - a
-		U, S, Vt = svd(X; full=false)
-		p = 100
-		r = 90
-		ψᵣ =  Ũ = @view U[:, 1:p]
-		Q, R, pivot = qr(ψᵣ', ColumnNorm())
-		C = zero(ψᵣ')
-		for k in 1:p
-			@inbounds C[k, pivot[k]] = 1
-		end
-		@inbounds Θ = C * ψᵣ
-		Θ̃ = @view Θ[:, 1:r]
+    cursor = 1
+    for (i, num) in collect(enumerate(num_faces[1:end-1]))
+        cursor += num
+        v1 = @view faces[:, 1:sum(num_faces[1:i-1])]
+        v2 = @view faces[:, sum(num_faces[1:i])+1:end]
+        training_faces = hcat(v1, v2)
+        test_face = @view faces[:, cursor+1]
 
-		@inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
-		@inbounds y_random_sensor_placement = @view test_face[rand(1:length(test_face), p), :]
+        average_face = mean(training_faces; dims = 2)
+        a = reshape(repeat(average_face, size(training_faces)[2]), size(training_faces))
+        X = training_faces - a
+        U, S, Vt = svd(X; full = false)
+        p = 100
+        r = 90
+        ψᵣ = Ũ = @view U[:, 1:p]
+        Q, R, pivot = qr(ψᵣ', ColumnNorm())
+        C = zero(ψᵣ')
+        for k = 1:p
+            @inbounds C[k, pivot[k]] = 1
+        end
+        @inbounds Θ = C * ψᵣ
+        Θ̃ = @view Θ[:, 1:r]
 
-		a_qr_sensor_placement = Θ \ y_qr_sensor_placement
-		a_random_sensor_placement = Θ \ y_random_sensor_placement
-		
-		ã_qr_sensor_placement = Θ̃ \ y_qr_sensor_placement
-		ã_random_sensor_placement = Θ̃ \ y_random_sensor_placement
-		
-		@inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
-		@inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
-		
-		@inbounds face_recon_qr_sensor_placement2 = ψᵣ[:,1:r] * ã_qr_sensor_placement
-		@inbounds face_recon_random_sensor_placement2 = ψᵣ[:, 1:r] * ã_random_sensor_placement
-	
-		errs[i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
-		errs[i, 2] = reconstruction_err(test_face, face_recon_random_sensor_placement)
+        @inbounds y_qr_sensor_placement = @view test_face[pivot[1:p], :]
+        @inbounds y_random_sensor_placement =
+            @view test_face[rand(1:length(test_face), p), :]
 
-		errs[i, 3] = reconstruction_err(test_face, face_recon_qr_sensor_placement2)
-		errs[i, 4] = reconstruction_err(test_face, face_recon_random_sensor_placement2)
-	end
-	errs
+        a_qr_sensor_placement = Θ \ y_qr_sensor_placement
+        a_random_sensor_placement = Θ \ y_random_sensor_placement
+
+        ã_qr_sensor_placement = Θ̃ \ y_qr_sensor_placement
+        ã_random_sensor_placement = Θ̃ \ y_random_sensor_placement
+
+        @inbounds face_recon_qr_sensor_placement = ψᵣ * a_qr_sensor_placement
+        @inbounds face_recon_random_sensor_placement = ψᵣ * a_random_sensor_placement
+
+        @inbounds face_recon_qr_sensor_placement2 = ψᵣ[:, 1:r] * ã_qr_sensor_placement
+        @inbounds face_recon_random_sensor_placement2 =
+            ψᵣ[:, 1:r] * ã_random_sensor_placement
+
+        errs[i, 1] = reconstruction_err(test_face, face_recon_qr_sensor_placement)
+        errs[i, 2] = reconstruction_err(test_face, face_recon_random_sensor_placement)
+
+        errs[i, 3] = reconstruction_err(test_face, face_recon_qr_sensor_placement2)
+        errs[i, 4] = reconstruction_err(test_face, face_recon_random_sensor_placement2)
+    end
+    errs
 end
 
 # ╔═╡ 35ab1fcd-f12c-411e-9229-04a3533f4a1f
 function plot_nine(sol)
-	groupedbar(sol;
-	bar_position = :stack,
-	xlabel="Face index",
-	ylabel="reconstruction error",
-	labels=reshape(["QR (r = 100)", "Random (r = 100)", "QR (r = 90)", "Random (r = 90)"], 1, :)
-)
+    groupedbar(
+        sol;
+        bar_position = :stack,
+        xlabel = "Face index",
+        ylabel = "reconstruction error",
+        labels = reshape(
+            ["QR (r = 100)", "Random (r = 100)", "QR (r = 90)", "Random (r = 90)"],
+            1,
+            :,
+        ),
+    )
 end
 
 # ╔═╡ 47e0accf-5b04-4a7d-af11-0b54b6b44bc7

@@ -15,7 +15,17 @@ end;
 
 # ╔═╡ 86d324dc-ffc9-4e17-9c07-f77a98bad08a
 # ╠═╡ show_logs = false
-using FileIO, ImageShow, ImageCore, FFTW, Plots, Compat, DifferentialEquations, PlutoUI, MAT, Sound, DSP
+using FileIO,
+    ImageShow,
+    ImageCore,
+    FFTW,
+    Plots,
+    Compat,
+    DifferentialEquations,
+    PlutoUI,
+    MAT,
+    Sound,
+    DSP
 
 # ╔═╡ 76eb5bfb-1760-4c92-a75c-f67dd7b6f85e
 md"# Chapter 2 - Fourier and Wavelet Transforms"
@@ -40,7 +50,7 @@ function heat()
     L = 100.0
     N = 1000
     dx = L / N
-    domain = range(-L / 2, stop=L / 2 - dx, length=N)
+    domain = range(-L / 2, stop = L / 2 - dx, length = N)
 
     u₀ = collect(0 * domain)
     u₀[400:600] .= 1
@@ -58,19 +68,21 @@ function heat()
         dû .= -α^2 * (k .^ 2) .* û
     end
     prob = ODEProblem(rhs, u₀, tspan, params)
-    û = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)))
+    û = solve(prob, AutoTsit5(Rosenbrock23(autodiff = false)))
     u = zeros(Complex, size(û)...)
 
-    for k in 1:length(eachcol(u))
+    for k = 1:length(eachcol(u))
         u[:, k] = ifft(û[:, k])
     end
     sol = real(u)
 
-    @gif for i in 1:length(eachcol(sol))
-        plot(domain, sol[:, i];
-            ylims=(-0.01, 1),
-            legend=false,
-            title="t = $(round(û.t[i] *1000; digits=2)) ms",
+    @gif for i = 1:length(eachcol(sol))
+        plot(
+            domain,
+            sol[:, i];
+            ylims = (-0.01, 1),
+            legend = false,
+            title = "t = $(round(û.t[i] *1000; digits=2)) ms",
         )
     end
 end
@@ -91,7 +103,7 @@ function burgers()
     L = 20
     N = 1000
     dx = L / N
-    domain = range(-L / 2, stop=L / 2 - dx, length=N)
+    domain = range(-L / 2, stop = L / 2 - dx, length = N)
 
     κ = (2π / L) * (-N/2:N/2-1)
     κ = fftshift(κ, 1)
@@ -111,14 +123,16 @@ function burgers()
     end
 
     prob = ODEProblem(rhs, u₀, tspan, params)
-    u = solve(prob, reltol=1e-10, abstol=1e-10)
+    u = solve(prob, reltol = 1e-10, abstol = 1e-10)
     sol, t = u[1:end, 1:end], u.t
 
-    @gif for i in 1:length(eachcol(sol))
-        plot(domain, sol[:, i];
-            ylims=(-0.01, 1.1),
-            legend=false,
-            title="t = $(round(t[i] *1000; digits=2)) ms",
+    @gif for i = 1:length(eachcol(sol))
+        plot(
+            domain,
+            sol[:, i];
+            ylims = (-0.01, 1.1),
+            legend = false,
+            title = "t = $(round(t[i] *1000; digits=2)) ms",
         )
     end
 end
@@ -155,25 +169,24 @@ begin
 
     function plot_one(sol)
         coefficients, compressed, errors, ratios = sol
-        p1 = plot(Gray.(coefficients);
-            axis=([], false),
-            title="coefficients",
-        )
+        p1 = plot(Gray.(coefficients); axis = ([], false), title = "coefficients")
         ps = [
-            plot(Gray.(compressed[i]);
-                axis=([], false),
-                title=round(ratio; digits=4),
-            ) for (i, ratio) in enumerate(ratios)]
+            plot(
+                Gray.(compressed[i]);
+                axis = ([], false),
+                title = round(ratio; digits = 4),
+            ) for (i, ratio) in enumerate(ratios)
+        ]
 
-        p3 = plot(ratios, errors;
-            xlabel="compression ratio",
-            ylabel="error",
-            legend=false,
+        p3 = plot(
+            ratios,
+            errors;
+            xlabel = "compression ratio",
+            ylabel = "error",
+            legend = false,
         )
 
-        plot(p1, ps..., p3;
-            size=(900, 900),
-        )
+        plot(p1, ps..., p3; size = (900, 900))
     end
 end
 
@@ -193,7 +206,7 @@ function solve_three()
     L = 100.0
     N = 1000
     dx = L / N
-    domain = range(-L / 2, stop=L / 2 - dx, length=N)
+    domain = range(-L / 2, stop = L / 2 - dx, length = N)
 
     κ = (2π / L) * (-N/2:N/2-1)
     κ = fftshift(κ, 1)
@@ -212,15 +225,23 @@ function solve_three()
     t = tspan[1]:tspan[2]/500:tspan[2]
 
     prob = ODEProblem(rhs, u₀, tspan)
-    u = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)), saveat=t, reltol=1e-10, abstol=1e-10)
+    u = solve(
+        prob,
+        AutoTsit5(Rosenbrock23(autodiff = false)),
+        saveat = t,
+        reltol = 1e-10,
+        abstol = 1e-10,
+    )
     sol, t = u[1:end, 1:end], u.t
 
 
-    @gif for i in 1:length(eachcol(sol))
-        plot(domain, sol[:, i];
-            ylims=(-0.25, 1),
-            legend=false,
-            title="t = $(round(t[i] *1000; digits=2)) ms",
+    @gif for i = 1:length(eachcol(sol))
+        plot(
+            domain,
+            sol[:, i];
+            ylims = (-0.25, 1),
+            legend = false,
+            title = "t = $(round(t[i] *1000; digits=2)) ms",
         )
     end
 end
@@ -243,7 +264,7 @@ function solve_four()
     L = 100.0
     N = 1000
     dx = L / N
-    domain = range(-L / 2, stop=L / 2 - dx, length=N)
+    domain = range(-L / 2, stop = L / 2 - dx, length = N)
 
     κ = (2π / L) * (-N/2:N/2-1)
     κ = fftshift(κ, 1)
@@ -264,14 +285,16 @@ function solve_four()
     t = tspan[1]:tspan[2]/200:tspan[2]
 
     prob = ODEProblem(rhs, u₀, tspan)
-    u = solve(prob, AutoTsit5(Rosenbrock23(autodiff=false)), saveat=t)
+    u = solve(prob, AutoTsit5(Rosenbrock23(autodiff = false)), saveat = t)
     sol, t = u[1:end, 1:end], u.t
 
-    @gif for i in 1:length(eachcol(sol))
-        plot(domain, sol[:, i];
-            ylims=(-0.5, 1.75),
-            legend=false,
-            title="t = $(round(t[i] *1000; digits=2)) ms",
+    @gif for i = 1:length(eachcol(sol))
+        plot(
+            domain,
+            sol[:, i];
+            ylims = (-0.5, 1.75),
+            legend = false,
+            title = "t = $(round(t[i] *1000; digits=2)) ms",
         )
     end
 end
@@ -386,49 +409,57 @@ function solve_eight()
     psd_clean = abs2.(fft(rush_clean)) / (N * fₛ)
 
 
-    p1 = plot(1:fₛ, real(RUSH[1:N÷2]);
-        legend=false,
-        xlabel="Freq (Hz)",
-        ylabel="Amplitude",
-        title="original spectrum",
+    p1 = plot(
+        1:fₛ,
+        real(RUSH[1:N÷2]);
+        legend = false,
+        xlabel = "Freq (Hz)",
+        ylabel = "Amplitude",
+        title = "original spectrum",
     )
-    p2 = plot(1:fₛ, amp2db.(psd[1:N÷2]);
-        legend=false,
-        xlabel="Freq (Hz)",
-        ylabel="PSD (dB / Hz)",
-        title="original PSD",
+    p2 = plot(
+        1:fₛ,
+        amp2db.(psd[1:N÷2]);
+        legend = false,
+        xlabel = "Freq (Hz)",
+        ylabel = "PSD (dB / Hz)",
+        title = "original PSD",
     )
-    p3 = plot(1:fₛ, real(RUSH_NOISY[1:N÷2]);
-        legend=false,
-        ylabel="Amplitude",
-        xlabel="Freq (Hz)",
-        title="noisy spectrum",
+    p3 = plot(
+        1:fₛ,
+        real(RUSH_NOISY[1:N÷2]);
+        legend = false,
+        ylabel = "Amplitude",
+        xlabel = "Freq (Hz)",
+        title = "noisy spectrum",
     )
-    p4 = plot(1:fₛ, amp2db.(psd_noisy[1:N÷2]);
-        legend=false,
-        xlabel="Freq (Hz)",
-        ylabel="PSD (dB / Hz)",
-        title="noisy PSD",
+    p4 = plot(
+        1:fₛ,
+        amp2db.(psd_noisy[1:N÷2]);
+        legend = false,
+        xlabel = "Freq (Hz)",
+        ylabel = "PSD (dB / Hz)",
+        title = "noisy PSD",
     )
 
-    p5 = plot(1:fₛ, real(RUSH_CLEAN[1:N÷2]);
-        legend=false,
-        ylabel="Amplitude",
-        xlabel="Freq (Hz)",
-        title="clean spectrum",
+    p5 = plot(
+        1:fₛ,
+        real(RUSH_CLEAN[1:N÷2]);
+        legend = false,
+        ylabel = "Amplitude",
+        xlabel = "Freq (Hz)",
+        title = "clean spectrum",
     )
-    p6 = plot(1:fₛ, amp2db.(psd_clean[1:N÷2]);
-        legend=false,
-        xlabel="Freq (Hz)",
-        ylabel="PSD (dB / Hz)",
-        title="clean PSD",
-        ylim=(-400, 0),
+    p6 = plot(
+        1:fₛ,
+        amp2db.(psd_clean[1:N÷2]);
+        legend = false,
+        xlabel = "Freq (Hz)",
+        ylabel = "PSD (dB / Hz)",
+        title = "clean PSD",
+        ylim = (-400, 0),
     )
-    plot(p1, p2, p3, p4, p5, p6;
-        layout=(3, 2),
-        size=(600, 800),
-		xrotation=90,
-    )
+    plot(p1, p2, p3, p4, p5, p6; layout = (3, 2), size = (600, 800), xrotation = 90)
 end
 
 # ╔═╡ 2d13b62d-6ebe-41af-8ba7-c02d1bebbfc0
