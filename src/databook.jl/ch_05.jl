@@ -68,10 +68,11 @@ function svht(Σ::Vector, dim::Tuple{Int,Int})
 end
 
 # ╔═╡ 1341cf2c-532c-4e06-a946-2a1fc02a7568
-SVMClassifier = @load SVMClassifier pkg=MLJScikitLearnInterface
+# ╠═╡ show_logs = false
+SVMClassifier = @load SVMClassifier pkg=MLJScikitLearnInterface verbosity=0
 
 # ╔═╡ 9d6e2b5d-f48e-4808-ada3-e399cf6e097d
-DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree
+DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
 
 # ╔═╡ d1fdbba8-ba45-488c-bf9c-766cf6dd98ae
 function solve_one()
