@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes",
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -69,7 +76,8 @@ end;
 # ╔═╡ 4b201856-e4af-4cd0-bb57-1af254dc26f1
 begin
     plot(
-        sol.t, [[sol(t)[1] for t in collect(sol.t)], [sol(t)[2] for t in collect(sol.t)]];
+        sol.t,
+        [[sol(t)[1] for t in collect(sol.t)], [sol(t)[2] for t in collect(sol.t)]];
         idx = [2, 1],
         title = "Simple Harmonic Oscillator",
         xaxis = "Time",
@@ -153,7 +161,12 @@ end
 sol_10 = solve(prob_10, DPRKN6(); reltol = 1e-12);
 
 # ╔═╡ 133981dd-d36e-41de-a07c-0dd2ee1634cc
-plot(sol_10.t, [[sol_10(t)[1] for t in collect(sol_10.t)], [sol_10(t)[2] for t in collect(sol_10.t)]], idx = [2, 1]; label = ["du" "u"])
+plot(
+    sol_10.t,
+    [[sol_10(t)[1] for t in collect(sol_10.t)], [sol_10(t)[2] for t in collect(sol_10.t)]],
+    idx = [2, 1];
+    label = ["du" "u"],
+)
 
 # ╔═╡ 3d425689-f115-46bc-bea1-903bb64a2100
 md"## Example 11 - MuPad
@@ -179,7 +192,11 @@ end
 sol_11 = solve(prob_11, DPRKN6(); reltol = 1e-12);
 
 # ╔═╡ 1713685d-8b71-49a8-946a-fc64a2031319
-plot(sol_11.t, [[sol_11(t)[1] for t in collect(sol_11.t)], [sol_11(t)[2] for t in collect(sol_11.t)]]; label = ["du" "u"])
+plot(
+    sol_11.t,
+    [[sol_11(t)[1] for t in collect(sol_11.t)], [sol_11(t)[2] for t in collect(sol_11.t)]];
+    label = ["du" "u"],
+)
 
 # ╔═╡ ee381a04-9899-42b4-aee7-1e791312102f
 md"## Example 12 - Unstable
@@ -197,7 +214,7 @@ begin
     end
     u0_12 = [0.0]
     du0_12 = [0.0]
-    prob_12 = SecondOrderODEProblem(ode_12, du0_12, u0_12, tspan,)
+    prob_12 = SecondOrderODEProblem(ode_12, du0_12, u0_12, tspan)
 end
 
 # ╔═╡ ba1e3724-ff59-4e80-941d-3af5c08744a3

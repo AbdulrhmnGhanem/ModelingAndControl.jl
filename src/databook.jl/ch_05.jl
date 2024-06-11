@@ -11,11 +11,19 @@ begin
     import Pkg
     Pkg.activate(joinpath("..", ".."))
     data_path = joinpath("..", "..", "books", "databook", "DATA")
-	ENV["DATADEPS_ALWAYS_ACCEPT"] = true
+    ENV["DATADEPS_ALWAYS_ACCEPT"] = true
 end;
 
 # ╔═╡ 87218cde-7a86-4853-bd38-3ee9f1500a94
-using MLDatasets, StatsBase, ImageCore, ImageShow, LinearAlgebra, Plots, MultivariateStats, MLJ, DataFrames
+using MLDatasets,
+    StatsBase,
+    ImageCore,
+    ImageShow,
+    LinearAlgebra,
+    Plots,
+    MultivariateStats,
+    MLJ,
+    DataFrames
 
 # ╔═╡ dc1a9923-a2a8-4ff3-a7d0-89eeb4b4d636
 md"# Chapter 5 - Clustering and Classification"
@@ -54,8 +62,8 @@ Gavish-Donoho algorithm for unknown noise.
 
 Adapted from [PyDMD](https://github.com/PyDMD/PyDMD/blob/d67a115805274b7862cb57d1ea4e4cd721412997/pydmd/utils.py#L19)."""
 function svht(Σ::Vector, dim::Tuple{Int,Int})
-	β = min(dim[1], dim[2]) / max(dim[1], dim[2])
-	ω = 0.56 * β^3 - 0.95 * β^2 + 1.82 * β + 1.43
+    β = min(dim[1], dim[2]) / max(dim[1], dim[2])
+    ω = 0.56 * β^3 - 0.95 * β^2 + 1.82 * β + 1.43
     τ = median(Σ) * ω
     rank = sum(Σ .> τ)
 
@@ -69,170 +77,261 @@ end
 
 # ╔═╡ 1341cf2c-532c-4e06-a946-2a1fc02a7568
 # ╠═╡ show_logs = false
-SVMClassifier = @load SVMClassifier pkg=MLJScikitLearnInterface verbosity=0
+SVMClassifier = @load SVMClassifier pkg = MLJScikitLearnInterface verbosity = 0
 
 # ╔═╡ 9d6e2b5d-f48e-4808-ada3-e399cf6e097d
-DecisionTreeClassifier = @load DecisionTreeClassifier pkg=DecisionTree verbosity=0
+DecisionTreeClassifier = @load DecisionTreeClassifier pkg = DecisionTree verbosity = 0
 
 # ╔═╡ d1fdbba8-ba45-488c-bf9c-766cf6dd98ae
 function solve_one()
-	training_data = MNIST(:train)
-	X_train = reshape(training_data.features, (28*28, 60000))
-	targets = training_data.targets
-	
-	test_data = MNIST(:test)
-	X_test = reshape(test_data.features, (28*28, 10000))
-	test_targets = test_data.targets
+    training_data = MNIST(:train)
+    X_train = reshape(training_data.features, (28 * 28, 60000))
+    targets = training_data.targets
 
-	# svd analysis
-	U, S, Vt = svd(X_train)
-	r = svht(S, size(X_train))
-	V_selected = Vt'[:, [2,3,5]]
-	projections = X_train' * V_selected
+    test_data = MNIST(:test)
+    X_test = reshape(test_data.features, (28 * 28, 10000))
+    test_targets = test_data.targets
 
-	# LDA for two and three numbers
-	zs = X_train[:, findall(x -> x == 0, targets)]
-	os = X_train[:, findall(x -> x == 1, targets)]
-	ts = X_train[:, findall(x -> x == 2, targets)]
-	
-	targets_lda1 = vcat(zeros(size(zs, 2)), ones(size(os, 2)))
-	lda1 = fit(MulticlassLDA, hcat(zs, os), targets_lda1)
-	y_lda1 = MultivariateStats.predict(lda1, hcat(zs, os))
-	
-	targets_lda2 = vcat(zeros(size(zs, 2)), ones(size(os, 2)), 2 * ones(size(ts, 2)))
-	lda2 = fit(MulticlassLDA, hcat(zs, os, ts), targets_lda2)
-	y_lda2 = MultivariateStats.predict(lda2, hcat(zs, os, ts))
+    # svd analysis
+    U, S, Vt = svd(X_train)
+    r = svht(S, size(X_train))
+    V_selected = Vt'[:, [2, 3, 5]]
+    projections = X_train' * V_selected
 
-	lda3 = fit(MulticlassLDA, X_train, targets)
-	
-	X_train_lda = MultivariateStats.transform(lda3, X_train)
-	X_test_lda = MultivariateStats.transform(lda3, X_test)
-	
-	classes_present = unique(targets)
-	centroids = [mean(X_train_lda[:, targets .== c], dims=2) for c in classes_present]
+    # LDA for two and three numbers
+    zs = X_train[:, findall(x -> x == 0, targets)]
+    os = X_train[:, findall(x -> x == 1, targets)]
+    ts = X_train[:, findall(x -> x == 2, targets)]
 
-	function find_closest_centroid(point, centroids)
-	    dists = [norm(point - centroid) for centroid in centroids]
-    	classes_present[argmin(dists)]
-	end
+    targets_lda1 = vcat(zeros(size(zs, 2)), ones(size(os, 2)))
+    lda1 = fit(MulticlassLDA, hcat(zs, os), targets_lda1)
+    y_lda1 = MultivariateStats.predict(lda1, hcat(zs, os))
 
-	y_lda3 = [find_closest_centroid(X_test_lda[:, i], centroids) for i in 1:size(X_test_lda, 2)]
-	lda_accuracy = sum(y_lda3 .== test_targets) / length(test_targets)
+    targets_lda2 = vcat(zeros(size(zs, 2)), ones(size(os, 2)), 2 * ones(size(ts, 2)))
+    lda2 = fit(MulticlassLDA, hcat(zs, os, ts), targets_lda2)
+    y_lda2 = MultivariateStats.predict(lda2, hcat(zs, os, ts))
 
-	num_classes = length(centroids)
-	distances = zeros(num_classes, num_classes)
-	
-	
-	for i in 1:num_classes
-	    for j in i+1:num_classes
-	        distances[i, j] = norm(centroids[i] - centroids[j])
-			distances[j, i] = distances[i, j]
-	    end
-	end
-	hard, easy = findmin(x -> x == 0 ? Inf : x, distances), findmax(distances)
-	
-	train_df = DataFrame(X_train', :auto)
-	test_df = DataFrame(X_test', :auto)
-	
-	
-	SVM = SVMClassifier(cache_size=1000)
-	svm = machine(SVM, train_df, categorical(targets))
-	fit!(svm)
+    lda3 = fit(MulticlassLDA, X_train, targets)
 
-	svm_accuracy = mean(categorical(test_targets) .== coerce(MLJ.predict(svm, test_df), Multiclass))
+    X_train_lda = MultivariateStats.transform(lda3, X_train)
+    X_test_lda = MultivariateStats.transform(lda3, X_test)
 
-	DecisionTree = DecisionTreeClassifier()
-	decision_tree = machine(DecisionTree, train_df, categorical(targets))
-	fit!(decision_tree)
-	
-	decision_tree_accuracy = mean(categorical(test_targets) .== mode.(MLJ.predict(decision_tree, test_df)))
+    classes_present = unique(targets)
+    centroids = [mean(X_train_lda[:, targets.==c], dims = 2) for c in classes_present]
 
-	test_five = X_test[:, findall(x -> x == 5, test_targets)]
-	test_three = X_test[:, findall(x -> x == 3, test_targets)]
-	test_four = X_test[:, findall(x -> x == 4, test_targets)]
-	test_two = X_test[:, findall(x -> x == 2, test_targets)]
-	X_hard = hcat(test_three, test_five)
-	hard_df = DataFrame(X_hard', :auto)
-	hard_targets = vcat(5*ones(size(test_five, 2)), 3*ones(size(test_three, 2)))
-	
-	X_easy = hcat(test_four, test_two)
-	easy_df = DataFrame(X_easy', :auto)
-	easy_targets = vcat(4*ones(size(test_four, 2)), 2*ones(size(test_two, 2)))
+    function find_closest_centroid(point, centroids)
+        dists = [norm(point - centroid) for centroid in centroids]
+        classes_present[argmin(dists)]
+    end
 
-	a = findall(x -> x == 5, y_lda3)
-	b = findall(x -> x == 3, y_lda3)
-	hard_lda_accurcy = mean(vcat(5*ones(length(a)), 3*ones(length(b))) .== test_targets[vcat(a, b)])
+    y_lda3 =
+        [find_closest_centroid(X_test_lda[:, i], centroids) for i = 1:size(X_test_lda, 2)]
+    lda_accuracy = sum(y_lda3 .== test_targets) / length(test_targets)
 
-	
-	a = findall(x -> x == 4, y_lda3)
-	b = findall(x -> x == 2, y_lda3)
-	easy_lda_accurcy = mean(vcat(4*ones(length(a)), 2*ones(length(b))) .== test_targets[vcat(a, b)])
+    num_classes = length(centroids)
+    distances = zeros(num_classes, num_classes)
 
-	hard_svm_accuracy = mean(categorical(hard_targets) .== coerce(MLJ.predict(svm, hard_df), Multiclass))
-	easy_svm_accuracy = mean(categorical(easy_targets) .== coerce(MLJ.predict(svm, easy_df), Multiclass))
-	
-	hard_decision_tree_accuracy = mean(categorical(hard_targets) .== mode.(MLJ.predict(decision_tree, hard_df)))
-	easy_decision_tree_accuracy = mean(categorical(easy_targets) .== mode.(MLJ.predict(decision_tree, easy_df)))
-	
-	U, S, Vt, r, projections, targets, y_lda1, targets_lda1, y_lda2, targets_lda2, y_lda3, distances, easy, hard, lda_accuracy, svm_accuracy, decision_tree_accuracy, hard_decision_tree_accuracy, easy_decision_tree_accuracy, hard_lda_accurcy, easy_lda_accurcy, hard_svm_accuracy, easy_svm_accuracy
+
+    for i = 1:num_classes
+        for j = i+1:num_classes
+            distances[i, j] = norm(centroids[i] - centroids[j])
+            distances[j, i] = distances[i, j]
+        end
+    end
+    hard, easy = findmin(x -> x == 0 ? Inf : x, distances), findmax(distances)
+
+    train_df = DataFrame(X_train', :auto)
+    test_df = DataFrame(X_test', :auto)
+
+
+    SVM = SVMClassifier(cache_size = 1000)
+    svm = machine(SVM, train_df, categorical(targets))
+    fit!(svm)
+
+    svm_accuracy =
+        mean(categorical(test_targets) .== coerce(MLJ.predict(svm, test_df), Multiclass))
+
+    DecisionTree = DecisionTreeClassifier()
+    decision_tree = machine(DecisionTree, train_df, categorical(targets))
+    fit!(decision_tree)
+
+    decision_tree_accuracy =
+        mean(categorical(test_targets) .== mode.(MLJ.predict(decision_tree, test_df)))
+
+    test_five = X_test[:, findall(x -> x == 5, test_targets)]
+    test_three = X_test[:, findall(x -> x == 3, test_targets)]
+    test_four = X_test[:, findall(x -> x == 4, test_targets)]
+    test_two = X_test[:, findall(x -> x == 2, test_targets)]
+    X_hard = hcat(test_three, test_five)
+    hard_df = DataFrame(X_hard', :auto)
+    hard_targets = vcat(5 * ones(size(test_five, 2)), 3 * ones(size(test_three, 2)))
+
+    X_easy = hcat(test_four, test_two)
+    easy_df = DataFrame(X_easy', :auto)
+    easy_targets = vcat(4 * ones(size(test_four, 2)), 2 * ones(size(test_two, 2)))
+
+    a = findall(x -> x == 5, y_lda3)
+    b = findall(x -> x == 3, y_lda3)
+    hard_lda_accurcy =
+        mean(vcat(5 * ones(length(a)), 3 * ones(length(b))) .== test_targets[vcat(a, b)])
+
+
+    a = findall(x -> x == 4, y_lda3)
+    b = findall(x -> x == 2, y_lda3)
+    easy_lda_accurcy =
+        mean(vcat(4 * ones(length(a)), 2 * ones(length(b))) .== test_targets[vcat(a, b)])
+
+    hard_svm_accuracy =
+        mean(categorical(hard_targets) .== coerce(MLJ.predict(svm, hard_df), Multiclass))
+    easy_svm_accuracy =
+        mean(categorical(easy_targets) .== coerce(MLJ.predict(svm, easy_df), Multiclass))
+
+    hard_decision_tree_accuracy =
+        mean(categorical(hard_targets) .== mode.(MLJ.predict(decision_tree, hard_df)))
+    easy_decision_tree_accuracy =
+        mean(categorical(easy_targets) .== mode.(MLJ.predict(decision_tree, easy_df)))
+
+    U,
+    S,
+    Vt,
+    r,
+    projections,
+    targets,
+    y_lda1,
+    targets_lda1,
+    y_lda2,
+    targets_lda2,
+    y_lda3,
+    distances,
+    easy,
+    hard,
+    lda_accuracy,
+    svm_accuracy,
+    decision_tree_accuracy,
+    hard_decision_tree_accuracy,
+    easy_decision_tree_accuracy,
+    hard_lda_accurcy,
+    easy_lda_accurcy,
+    hard_svm_accuracy,
+    easy_svm_accuracy
 end
 
 # ╔═╡ 2889db74-209d-4d6b-8b61-474c3e796e2c
 function plot_one(sol_one)
-	U, S, Vt, r, projections, targets, y_lda1, targets_lda1, y_lda2, targets_lda2, y_lda3, distances, easy, hard, lda_accuracy, svm_accuracy, decision_tree_accuracy = sol_one
-	p1 = plot(S;
-		yaxis=:log,
-		title="Singular values",
-		label=missing,
-		grid=false,
-	)
-	vline!([r]; label="optimal r")
+    U,
+    S,
+    Vt,
+    r,
+    projections,
+    targets,
+    y_lda1,
+    targets_lda1,
+    y_lda2,
+    targets_lda2,
+    y_lda3,
+    distances,
+    easy,
+    hard,
+    lda_accuracy,
+    svm_accuracy,
+    decision_tree_accuracy = sol_one
+    p1 = plot(S; yaxis = :log, title = "Singular values", label = missing, grid = false)
+    vline!([r]; label = "optimal r")
 
-	p2 = scatter(projections[:, 1], projections[:, 2], projections[:, 3],
-		marker_z=targets, 
-		title="3D Projection of MNIST Data",
-		xlabel="Mode 2", 
-		ylabel="Mode 3", 
-		zlabel="Mode 5",
-	)
+    p2 = scatter(
+        projections[:, 1],
+        projections[:, 2],
+        projections[:, 3],
+        marker_z = targets,
+        title = "3D Projection of MNIST Data",
+        xlabel = "Mode 2",
+        ylabel = "Mode 3",
+        zlabel = "Mode 5",
+    )
 
-	p3 = plot(grid=false, axis=false, title="LDA between 0 and 1", legend=:topleft, ylim=(-1,10))
+    p3 = plot(
+        grid = false,
+        axis = false,
+        title = "LDA between 0 and 1",
+        legend = :topleft,
+        ylim = (-1, 10),
+    )
 
-	for label in [0, 1]
-		points = y_lda1[:, targets_lda1 .== label]'
-		scatter!(p3, points, 5*ones(length(points)), alpha=0.5, label=label)
-	end
+    for label in [0, 1]
+        points = y_lda1[:, targets_lda1.==label]'
+        scatter!(p3, points, 5 * ones(length(points)), alpha = 0.5, label = label)
+    end
 
-	p4 = plot(grid=false, axis=false, title="LDA between 0, 1, and 2", legend=:topleft)
-	for label in [0, 1, 2]
-		points = y_lda2[:, targets_lda2 .== label]
-		scatter!(p4, points[1, :], points[2, :], label=label, alpha=0.5)
-	end
+    p4 = plot(
+        grid = false,
+        axis = false,
+        title = "LDA between 0, 1, and 2",
+        legend = :topleft,
+    )
+    for label in [0, 1, 2]
+        points = y_lda2[:, targets_lda2.==label]
+        scatter!(p4, points[1, :], points[2, :], label = label, alpha = 0.5)
+    end
 
-	p5 = scatter(legend=false, grid=false, aspectratio=1,title="Discrimination hardness", xlims=(1, 10))
+    p5 = scatter(
+        legend = false,
+        grid = false,
+        aspectratio = 1,
+        title = "Discrimination hardness",
+        xlims = (1, 10),
+    )
 
-	# easiest and hardest to discriminate
-	for i in 1:10
-		for j in i:10
-			scatter!(p5, [i], [j], c=:blue, markersize=100*distances[i, j])
-		end
-	end
+    # easiest and hardest to discriminate
+    for i = 1:10
+        for j = i:10
+            scatter!(p5, [i], [j], c = :blue, markersize = 100 * distances[i, j])
+        end
+    end
 
-	radius = 0.3
-	theta = 0:0.01:2*pi
-	plot!(easy[2][2] .+ radius .* cos.(theta), easy[2][1] .+ radius .* sin.(theta), linecolor=:green)
-	plot!(hard[2][2] .+ radius .* cos.(theta), hard[2][1] .+ radius .* sin.(theta), linecolor=:red)
+    radius = 0.3
+    theta = 0:0.01:2*pi
+    plot!(
+        easy[2][2] .+ radius .* cos.(theta),
+        easy[2][1] .+ radius .* sin.(theta),
+        linecolor = :green,
+    )
+    plot!(
+        hard[2][2] .+ radius .* cos.(theta),
+        hard[2][1] .+ radius .* sin.(theta),
+        linecolor = :red,
+    )
 
-	plot(p1, p2, p3, p4, p5;
-		layout=(3,2)
-	)
+    plot(p1, p2, p3, p4, p5; layout = (3, 2))
 end
 
 # ╔═╡ 51586ab5-ae10-4274-832d-7365124f56a2
 begin
-	sol_one = UU, S, Vt, r, projections, targets, y_lda1, targets_lda1, y_lda2, targets_lda2, y_lda3, distances, easy, hard, lda_accuracy, svm_accuracy, decision_tree_accuracy, hard_decision_tree_accuracy, easy_decision_tree_accuracy, hard_lda_accurcy, easy_lda_accurcy, hard_svm_accuracy, easy_svm_accuracy = solve_one()
-	
-	plot_one(sol_one)
+    sol_one =
+        UU,
+        S,
+        Vt,
+        r,
+        projections,
+        targets,
+        y_lda1,
+        targets_lda1,
+        y_lda2,
+        targets_lda2,
+        y_lda3,
+        distances,
+        easy,
+        hard,
+        lda_accuracy,
+        svm_accuracy,
+        decision_tree_accuracy,
+        hard_decision_tree_accuracy,
+        easy_decision_tree_accuracy,
+        hard_lda_accurcy,
+        easy_lda_accurcy,
+        hard_svm_accuracy,
+        easy_svm_accuracy = solve_one()
+
+    plot_one(sol_one)
 end
 
 # ╔═╡ a88eaff3-9390-4357-a950-ee80e87c51e7
@@ -300,7 +399,7 @@ Face identification: see if you can build a classifier to identify individuals i
 # ╠═9d6e2b5d-f48e-4808-ada3-e399cf6e097d
 # ╠═d1fdbba8-ba45-488c-bf9c-766cf6dd98ae
 # ╟─a88eaff3-9390-4357-a950-ee80e87c51e7
-# ╠═2889db74-209d-4d6b-8b61-474c3e796e2c
+# ╟─2889db74-209d-4d6b-8b61-474c3e796e2c
 # ╟─51586ab5-ae10-4274-832d-7365124f56a2
 # ╟─8b934310-a31c-4e13-a7f4-b74af7fbea1f
 # ╠═43440805-55af-4d80-ae42-a2bfc0fd0af7
