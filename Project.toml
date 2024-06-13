@@ -54,6 +54,7 @@ cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [compat]
 BenchmarkTools = "1"
+CUDA = "5"
 Compat = "4"
 DSP = "0.7"
 DataFrames = "1"
