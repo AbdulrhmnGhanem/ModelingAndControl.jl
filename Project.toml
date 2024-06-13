@@ -53,6 +53,7 @@ WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [compat]
+BSON = "0.3"
 BenchmarkTools = "1"
 Compat = "4"
 DSP = "0.7"
