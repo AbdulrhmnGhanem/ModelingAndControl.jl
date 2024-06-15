@@ -36,6 +36,7 @@ jobs:
           path: |
             .cache
             .build
+            src/databook.jl/ks.jld2
           key: cache-pluto
           restore-keys: cache-pluto
 

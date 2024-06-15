@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "34dd90805001437e5da9e58152a125de47c86d89"
+project_hash = "71bbfc9dabe764aa300ed5db8070277d12312fb5"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -1519,6 +1519,7 @@ version = "1.0.0"
 [[deps.JLD2]]
 deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "Pkg", "PrecompileTools", "Reexport", "Requires", "TranscodingStreams", "UUIDs", "Unicode"]
 git-tree-sha1 = "bdbe8222d2f5703ad6a7019277d149ec6d78c301"
+pinned = true
 uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 version = "0.4.48"
 
