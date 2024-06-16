@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "71bbfc9dabe764aa300ed5db8070277d12312fb5"
+project_hash = "243e9a12f24fec15e4d140c485606742c410e1fa"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -2757,6 +2757,7 @@ uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 [[deps.ProgressLogging]]
 deps = ["Logging", "SHA", "UUIDs"]
 git-tree-sha1 = "80d919dee55b9c50e8d9e2da5eeafff3fe58b539"
+pinned = true
 uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
 version = "0.1.4"
 

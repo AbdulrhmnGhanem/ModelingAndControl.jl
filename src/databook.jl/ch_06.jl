@@ -14,7 +14,7 @@ begin
 end;
 
 # ╔═╡ 747cbaa4-f22e-4190-95e3-a180ab39ae2e
-using Flux, CUDA, FFTW, DifferentialEquations, Plots, JLD2
+using Flux, CUDA, FFTW, DifferentialEquations, Plots, JLD2, StatsBase, ProgressLogging
 
 # ╔═╡ 9138963c-8b3e-4ded-966b-1d67bb84dad7
 md"# Chapter 6 - Neural Networks and Deep Learning"
@@ -34,15 +34,17 @@ For the Lorenz equations, consider the following.
 5. See if you can train your NN to identify (for ρ = 28) when a transition from one lobe to another is imminent. Determine how far in advance you can make this prediction. (Note: You will have to label the transitions in a test set in order to do this task.)
 "
 
-# ╔═╡ ea583da7-a613-4311-a7e9-96ca3654262f
-length(0:10/400:10)
-
 # ╔═╡ d783d3b1-d528-4e81-9085-65ca7678d67e
 md"### The ODE time stepper solution"
 
 # ╔═╡ 65d2550e-5d4e-46ae-a83f-1294f4d82683
-function ks(u₀s, κ)
+function ks(u₀s)
     tspan = (0, 10)
+	L = 100.0
+    N = 1000
+    dx = L / N
+	κ = (2π / L) * (-N/2:N/2-1)	
+    κ = fftshift(κ, 1) 
 
     function rhs(dudt, u, p, t)
         û = fft(u)
@@ -57,13 +59,12 @@ function ks(u₀s, κ)
     t = tspan[1]:tspan[2]/200:tspan[2]
     prob = ODEProblem(rhs, u₀s[1, :], tspan)
 
-	sols = zeros(Float32, length(u₀s[1, :]), length(t), size(u₀s, 1))
+	sols = zeros(Float32, size(u₀s, 2), size(u₀s, 1))
 	for (i, u₀) in collect(enumerate(eachrow(u₀s)))
-		prob = remake(prob; u0=u₀)
-    	u = solve(prob, AutoTsit5(Rosenbrock23(autodiff = false)), saveat = t)
-		@inbounds sols[:, :, i] = u[1:end, 1:end]
+		prob = remake(prob; u0=u₀s[1, :])
+    	u = solve(prob, AutoTsit5(Rosenbrock23(autodiff = false)))
+		@inbounds sols[:, i] = u[:, end]
 	end
-	
     sols, t
 end
 
@@ -74,7 +75,7 @@ function ks_initial_conditions(num_samples)
 	dx = L / N
 	domain = range(-L / 2, stop = L / 2 - dx, length = N)
 
-    initial_conditions = zeros(num_samples, N)
+    initial_conditions = zeros(Float32, num_samples, N)
     for i in 1:num_samples        
         # Apply a random shift to the domain
         shift = rand() * L - L / 2
@@ -130,59 +131,92 @@ function ks_initial_conditions(num_samples)
 end
 
 # ╔═╡ 21dceb6a-02c8-4df8-a7af-261a490a417d
-function generate_training_data(num_samples)
+function generate_training_data(num_samples, save=true)
 	f = "ks.jld2" 
-	if isfile(f)
-		f = jldopen(f)
-		if f["num_samples"] == num_samples
-			return f["sols"], f["time"]
+	if save && isfile(f)
+		fi = jldopen(f)
+		if fi["num_samples"] == num_samples
+			return fi["sols"], fi["u₀s"], fi["time"]
 		end
-	close(f)
-	f = "ks.jld2"
+	close(fi)
 	end
-	
-	L = 100.0
-    N = 1000
-    dx = L / N
-	κ = (2π / L) * (-N/2:N/2-1)	
-    κ = fftshift(κ, 1) 
-    domain = range(-L / 2, stop = L / 2 - dx, length = N)
+
 	u₀s = ks_initial_conditions(num_samples)
-	sols, time = ks(u₀s, κ)
+	sols, time = ks(u₀s)
 
-	jldsave(f; sols, time, num_samples)
-	sols, time
+	save && jldsave(f; sols, time, num_samples, u₀s)
+	sols, u₀s, time
 end
 
-# ╔═╡ 1733c9f7-f51c-46e7-8f47-8b38a570b794
-sols, time = generate_training_data(300)
+# ╔═╡ a2f3f620-d100-41e0-b82c-60b673baf9b5
+function feedforward_ks()
+	batch_size = 16
+	sols, u₀s, t = generate_training_data(30batch_size)
+	input = @view sols[1:end-1, :]
+	output = @view sols[2:end, :]
 
-# ╔═╡ d7bf087d-e488-4aeb-bc3a-00fbd7bd2c7c
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	L = 100.0
-    N = 1000
-    dx = L / N
-	κ = (2π / L) * (-N/2:N/2-1)	
-    κ = fftshift(κ, 1)
-    domain = range(-L / 2, stop = L / 2 - dx, length = N)
-	u₀s = ks_initial_conditions(1)
-	sols, time = ks(u₀s, κ)
-	sol = sols[:, :, 1]
-end
-  ╠═╡ =#
+	s = size(input, 1)
+	model = Chain(
+		Dense(s => 2s, sigmoid_fast),
+		Dense(2s => 2s, relu),
+		Dense(2s => s)
+	) |> gpu
 
-# ╔═╡ feb5e7e1-112d-4805-a5ff-b2906e20c90e
- @gif for i = 1:length(eachcol(sol))
-	plot(
-		domain,
-		sol[:, i];
-		# ylims = (-0.5, 1.75),
-		legend = false,
-		title = "t = $(round(time[i] *1000; digits=2)) ms",
-	)
+		
+	optim = Flux.setup(Flux.Adam(0.01), model)
+	folds = Flux.kfolds(Flux.shuffleobs((input, output)), k = 4)
+	
+	all_losses = []
+
+	i = 1
+    for ((train_input, train_output), (val_input, val_output)) in folds
+		train_loader = Flux.DataLoader((train_input, train_output) |> gpu, batchsize=batch_size, shuffle=true)
+        
+		val_loader = Flux.DataLoader((val_input, val_output) |> gpu, batchsize=batch_size)
+
+        losses = []
+        @progress for epoch in 1:1_000
+            for (x, y) in train_loader
+                loss, grads = Flux.withgradient(model) do m
+                    # Evaluate model and loss inside gradient context:
+                    y_hat = m(x)
+                    Flux.mse(y_hat, y)
+                end
+                Flux.update!(optim, model, grads[1])
+                push!(losses, loss)  # logging, outside gradient context
+            end
+        end
+
+		push!(all_losses, losses)
+
+        # Evaluate on validation fold in batches
+        val_losses = []
+        for (x, y) in val_loader
+            val_loss = Flux.mse(model(x), y)
+            push!(val_losses, val_loss)
+        end
+        avg_val_loss = mean(val_losses)
+		@info "Validation loss for fold $i: $avg_val_loss\n"
+		i += 1
+    end
+
+	all_losses, model
 end
+
+# ╔═╡ 90a2bfdd-c817-4927-9111-f30e1e3229c6
+losses, model = feedforward_ks()
+
+# ╔═╡ 1be89559-9e0e-4c40-9e12-2aece27d87ab
+a = generate_training_data(2, false)
+
+# ╔═╡ d0469011-615c-43b5-b4c4-60bb03b33173
+plot(a[2][1,:])
+
+# ╔═╡ 66ed9a87-5bd7-49f9-9d1c-1621725b4aab
+plot(model(a[2][1, 1:end-1] |> gpu) |> cpu)
+
+# ╔═╡ 2bcb4c1e-5510-4b0c-9311-0923203cf447
+plot(ks(a[2][1,:]')[1])
 
 # ╔═╡ cad54b3c-5c5e-41a7-b49c-caedc53e83fa
 md"## Exercise 6.2
@@ -220,14 +254,16 @@ three distinct parameter regimes where non-trivial spatio-temporal dynamics occu
 # ╠═747cbaa4-f22e-4190-95e3-a180ab39ae2e
 # ╟─9138963c-8b3e-4ded-966b-1d67bb84dad7
 # ╟─ebcc9661-0840-4935-b909-4011fe31ceea
-# ╠═ea583da7-a613-4311-a7e9-96ca3654262f
 # ╟─d783d3b1-d528-4e81-9085-65ca7678d67e
 # ╠═65d2550e-5d4e-46ae-a83f-1294f4d82683
-# ╠═2eefce96-2d4e-4a75-b049-f5dc533c8715
+# ╟─2eefce96-2d4e-4a75-b049-f5dc533c8715
 # ╠═21dceb6a-02c8-4df8-a7af-261a490a417d
-# ╠═1733c9f7-f51c-46e7-8f47-8b38a570b794
-# ╠═d7bf087d-e488-4aeb-bc3a-00fbd7bd2c7c
-# ╠═feb5e7e1-112d-4805-a5ff-b2906e20c90e
+# ╠═a2f3f620-d100-41e0-b82c-60b673baf9b5
+# ╠═90a2bfdd-c817-4927-9111-f30e1e3229c6
+# ╠═1be89559-9e0e-4c40-9e12-2aece27d87ab
+# ╠═d0469011-615c-43b5-b4c4-60bb03b33173
+# ╠═66ed9a87-5bd7-49f9-9d1c-1621725b4aab
+# ╠═2bcb4c1e-5510-4b0c-9311-0923203cf447
 # ╟─cad54b3c-5c5e-41a7-b49c-caedc53e83fa
 # ╠═45c64e3c-f803-4f7b-b423-4929f59067e4
 # ╟─47c34e84-0f3f-4aad-bdff-cc7c6e2815fd
